@@ -583,6 +583,58 @@ function renderNotifPop(pop){
   });
 }
 
+/* indikator geser navigasi liquid: sorotan meluncur ke item aktif,
+   mulai dari posisi halaman sebelumnya (sessionStorage) bila ada */
+function placeNavInd(ind, link, axis){
+  if(!ind || !link){ if(ind) ind.classList.remove("on"); return; }
+  if(axis === "y"){
+    ind.style.height = link.offsetHeight+"px";
+    ind.style.transform = "translateY("+link.offsetTop+"px)";
+  } else {
+    ind.style.width = link.offsetWidth+"px";
+    ind.style.transform = "translateX("+link.offsetLeft+"px)";
+  }
+  ind.classList.add("on");
+}
+function initNavIndicators(){
+  const navs = [
+    { ind: $(".bb-ind"), links: $$(".bb-link"), axis: "x" },
+    { ind: $(".rail-ind"), links: $$(".rail-link"), axis: "y" }
+  ];
+  let prevHref = null;
+  try{ prevHref = sessionStorage.getItem("fnatixNavHref"); }catch(e){}
+  navs.forEach(nv=>{
+    if(!nv.ind || !nv.links.length) return;
+    const ai = nv.links.findIndex(a=> a.classList.contains("active"));
+    if(ai < 0){ nv.ind.classList.remove("on"); return; }
+    nv.activeLink = nv.links[ai];
+    const pi = prevHref? nv.links.findIndex(a=> a.getAttribute("href") === prevHref) : -1;
+    if(pi >= 0 && pi !== ai){
+      nv.ind.classList.add("no-anim");
+      placeNavInd(nv.ind, nv.links[pi], nv.axis);
+      void nv.ind.offsetWidth;
+      nv.ind.classList.remove("no-anim");
+      requestAnimationFrame(()=> placeNavInd(nv.ind, nv.links[ai], nv.axis));
+    } else {
+      placeNavInd(nv.ind, nv.links[ai], nv.axis);
+    }
+  });
+  const activeLink = $(".bb-link.active") || $(".rail-link.active");
+  if(activeLink){ try{ sessionStorage.setItem("fnatixNavHref", activeLink.getAttribute("href")); }catch(e){} }
+  if(!window.__navIndBound){
+    window.__navIndBound = true;
+    const reposition = ()=> navs.forEach(nv=>{
+      if(nv.ind && nv.activeLink){
+        nv.ind.classList.add("no-anim");
+        placeNavInd(nv.ind, nv.activeLink, nv.axis);
+        nv.ind.classList.remove("no-anim");
+      }
+    });
+    window.addEventListener("resize", reposition);
+    window.addEventListener("load", reposition);
+  }
+}
+
 /* shell: rel ikon ramping + bilah HP */
 function buildShell(){
   const host = $("#shell");
@@ -601,6 +653,7 @@ function buildShell(){
     '<aside class="rail">'+
       '<a class="rail-brand" href="index.html" aria-label="'+esc(p.businessName)+'"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"></a>'+
       '<nav class="rail-nav" aria-label="Navigasi halaman">'+
+        '<span class="rail-ind" aria-hidden="true"></span>'+
         navLinks.map(n=> '<a class="rail-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+icon(n.icon)+"</a>").join("")+
       "</nav>"+
     "</aside>";
@@ -626,6 +679,7 @@ function buildShell(){
     "</header>";
   const bottomHTML =
     '<nav class="bottombar" aria-label="Navigasi halaman">'+
+      '<span class="bb-ind" aria-hidden="true"></span>'+
       navLinks.map(n=> '<a class="bb-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+icon(n.icon)+"</a>").join("")+
     "</nav>";
   const main = document.querySelector("main.sheet-main");
@@ -687,6 +741,7 @@ function buildShell(){
     if((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "k"){ e.preventDefault(); openGlobalSearch(); }
   });
   refreshIcons();
+  initNavIndicators();
 }
 
 /* splash (dashboard saja) */

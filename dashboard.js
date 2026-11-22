@@ -35,7 +35,6 @@ function renderSummary(){
   const monthTx=txs.filter(t=> String(t.date||"").slice(0,7)===mk);
   const prevTx=txs.filter(t=> String(t.date||"").slice(0,7)===pmk);
   const income=sumTx(monthTx), prevIncome=sumTx(prevTx);
-  const dp=$("#dashPeriod"); if(dp) dp.textContent=F.monthLabel(mk);
   $("#rowIncome").textContent=F.formatCurrencyValue(income);
   $("#sumStoreMeta").textContent=monthTx.length? "Rata-rata "+F.formatCurrencyValue(Math.round(income/monthTx.length))+" per pesanan" : "Belum ada pesanan bulan ini";
   setTrend($("#rowIncomeTrend"), income, prevIncome);
@@ -208,7 +207,6 @@ function render(){
 }
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
-    $("#dashDate").textContent=new Date().toLocaleDateString("id-ID",{ weekday:"long", day:"numeric", month:"long", year:"numeric" });
     await F.dataReady;
     render();
     window.__refreshPage=render;
