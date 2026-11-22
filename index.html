@@ -127,6 +127,33 @@
       <div class="empty hidden" id="topEmpty"><p>Belum ada customer tercatat.</p></div>
     </section>
   </div>
+
+  <section class="card" style="margin-top:16px" aria-label="Produk Digital">
+    <div class="card-head">
+      <h2>Produk Digital</h2>
+      <a class="link" href="produk-digital.html">Kelola Produk Digital <i data-lucide="arrow-right" class="icon-sm"></i></a>
+    </div>
+    <div class="pd-dash-grid" id="pdDashGrid">
+      <div>
+        <div class="pd-stats">
+          <div><div class="stat-value num" id="pdDashTotal">-</div><div class="stat-label">Total Pendapatan</div></div>
+          <div><div class="stat-value num"><span id="pdDashUnits">0</span> <span class="unit">unit</span></div><div class="stat-label">Unit Terjual</div></div>
+          <div><div class="stat-value num" id="pdDashTx">0</div><div class="stat-label">Transaksi</div></div>
+        </div>
+        <div id="pdDashRows"></div>
+        <p class="pd-note">Buku produk digital disimpan terpisah dari kas jasa edit dan freelance.</p>
+      </div>
+      <div>
+        <div class="donut-box pd" id="pdDashDonut"><canvas id="pdChart" aria-label="Grafik donat pendapatan per produk digital"></canvas><div class="donut-center hidden" id="pdChartCenter"><b id="pdChartCenterVal">-</b><span>total pendapatan</span></div></div>
+        <div class="legend hidden" id="pdChartLegend"></div>
+        <div class="empty hidden" id="pdDashChartEmpty" style="padding:14px 6px"><p>Belum ada pendapatan produk digital.</p></div>
+      </div>
+    </div>
+    <div class="empty hidden" id="pdDashEmpty">
+      <p>Belum ada penjualan produk digital tercatat.</p>
+      <a class="btn btn-primary" href="produk-digital.html">Buka Produk Digital</a>
+    </div>
+  </section>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

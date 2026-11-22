@@ -198,19 +198,99 @@ function renderInsight(){
   $("#topEmpty").classList.toggle("hidden", top.length>0);
   F.refreshIcons();
 }
+/* Produk Digital: ringkasan buku produkDigital (terpisah dari kas jasa edit).
+   Total mengikuti cara hitung halaman Produk Digital: hanya produk katalog. */
+function produkTotals(){
+  const entries=F.getProdukDigital();
+  const per=F.PRODUK_DIGITAL_PRODUCTS.map((p,i)=>{
+    const list=entries.filter(e=> e.product===p.id);
+    return { id:p.id, label:p.label, color:PALETTE[i%PALETTE.length],
+      qty:list.reduce((s,e)=> s+(Number(e.qty)||0),0),
+      amount:list.reduce((s,e)=> s+(Number(e.amount)||0),0) };
+  });
+  return { entries, per,
+    qty:per.reduce((s,v)=> s+v.qty,0),
+    amount:per.reduce((s,v)=> s+v.amount,0) };
+}
+let pdChartInst=null;
+function renderProdukChart(t){
+  const canvas=$("#pdChart"), empty=$("#pdDashChartEmpty"), wrap=$("#pdDashDonut"),
+        legend=$("#pdChartLegend"), cc=$("#pdChartCenter");
+  if(!canvas) return;
+  t=t||produkTotals();
+  const data=t.per.filter(v=> v.amount>0);
+  if(!data.length || !window.Chart){
+    canvas.style.display="none";
+    if(wrap) wrap.classList.add("hidden");
+    if(legend) legend.classList.add("hidden");
+    if(cc) cc.classList.add("hidden");
+    if(pdChartInst){ pdChartInst.destroy(); pdChartInst=null; }
+    if(empty){ empty.classList.remove("hidden");
+      empty.querySelector("p").textContent=!window.Chart? "Grafik tidak tersedia saat offline." : "Belum ada pendapatan produk digital."; }
+    return;
+  }
+  canvas.style.display="";
+  if(wrap) wrap.classList.remove("hidden");
+  if(empty) empty.classList.add("hidden");
+  if(pdChartInst){ pdChartInst.destroy(); pdChartInst=null; }
+  pdChartInst=new window.Chart(canvas.getContext("2d"), {
+    type:"doughnut",
+    data:{ labels:data.map(v=> v.label),
+      datasets:[{ data:data.map(v=> v.amount),
+        backgroundColor:data.map(v=> v.color),
+        borderWidth:2, borderColor:getComputedStyle(document.documentElement).getPropertyValue("--surface")||"#fff" }]},
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"68%", animation:{ duration:900, easing:"easeOutQuart", animateScale:true, animateRotate:true },
+      plugins:{ legend:{ display:false },
+        tooltip:{ callbacks:{ label(ctx){
+          const v=data[ctx.dataIndex];
+          return " "+ctx.label+": "+F.formatCurrencyValue(ctx.parsed)+" ("+v.qty+" unit)";
+        } } } } }
+  });
+  if(legend){
+    legend.innerHTML=data.map((v,i)=> `<span style="animation-delay:${i*45}ms"><span class="dot" style="background:${v.color}"></span>${F.esc(v.label)} <span class="val">${F.esc(F.formatCurrencyValue(v.amount))}</span></span>`).join("");
+    legend.classList.remove("hidden");
+  }
+  if(cc){
+    $("#pdChartCenterVal").textContent=F.formatCurrencyValue(t.amount);
+    cc.classList.remove("hidden");
+  }
+}
+function renderProduk(){
+  const grid=$("#pdDashGrid"), empty=$("#pdDashEmpty");
+  if(!grid) return;
+  let t=null;
+  try{ t=produkTotals(); }catch(e){ t=null; }
+  if(!t || !t.entries.length){
+    grid.classList.add("hidden");
+    if(empty) empty.classList.remove("hidden");
+    return;
+  }
+  grid.classList.remove("hidden");
+  if(empty) empty.classList.add("hidden");
+  $("#pdDashTotal").textContent=F.formatCurrencyValue(t.amount);
+  $("#pdDashUnits").textContent=String(t.qty);
+  $("#pdDashTx").textContent=String(t.entries.length);
+  $("#pdDashRows").innerHTML=t.per.map(v=>
+    '<div class="rank-row"><span class="pd-dot" style="background:'+v.color+'"></span>'+
+    '<span class="grow"><span class="title" style="display:block">'+F.esc(v.label)+'</span>'+
+    '<span class="sub">'+v.qty+' unit terjual</span></span>'+
+    '<span class="amount num">'+F.esc(F.formatCurrencyValue(v.amount))+"</span></div>").join("");
+  renderProdukChart(t);
+}
 function render(){
   renderSummary();
   renderRecent();
   renderTrend();
   renderChart();
   renderInsight();
+  renderProduk();
 }
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
     render();
     window.__refreshPage=render;
-    window.__onThemeChange=()=>{ renderChart(); renderTrend(); };
+    window.__onThemeChange=()=>{ renderChart(); renderTrend(); renderProdukChart(); };
     $("#dashAddBtn").addEventListener("click", ()=> F.openOrderModal(null, render));
     const eb=$("#emptyAddBtn"); if(eb) eb.addEventListener("click", ()=> F.openOrderModal(null, render));
     $("#globalSearchBtn").addEventListener("click", ()=> F.openGlobalSearch());
