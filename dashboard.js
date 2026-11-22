@@ -184,14 +184,52 @@ function renderTrend(){
         y:{ grid:{ color:grid }, border:{ display:false }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, maxTicksLimit:5,
           callback:v=> "Rp"+Number(v).toLocaleString("id-ID") } } } } });
 }
+/* Insight Produk Digital: tambahan dari buku produkDigital, selalu dilabeli
+   "Produk Digital" agar terpisah dari insight jasa edit. Mengembalikan array
+   kosong bila belum ada entri digital, supaya blok Insight tidak berubah. */
+function digitalInsightLines(mk, monthTx){
+  let valid=[];
+  try{
+    const ids=new Set(F.PRODUK_DIGITAL_PRODUCTS.map(p=> p.id));
+    valid=F.getProdukDigital().filter(e=> ids.has(e.product));
+  }catch(e){ valid=[]; }
+  if(!valid.length) return [];
+  const lines=[];
+  const t=produkTotals();
+  const per=t.per.filter(v=> v.qty>0 || v.amount>0).sort((a,b)=> (b.qty-a.qty) || (b.amount-a.amount));
+  if(per.length){
+    const best=per[0];
+    lines.push({ icon:"shopping-bag", text:"Produk Digital terlaris: "+best.label+" ("+best.qty+" unit terjual, total "+F.formatCurrencyValue(best.amount)+")." });
+  }
+  const monthEntries=valid.filter(e=> String(e.date||"").slice(0,7)===mk);
+  if(monthEntries.length){
+    const pdMonth=monthEntries.reduce((s,e)=> s+(Number(e.amount)||0),0);
+    const pdQty=monthEntries.reduce((s,e)=> s+(Number(e.qty)||0),0);
+    lines.push({ icon:"wallet", text:"Pendapatan Produk Digital bulan ini "+F.formatCurrencyValue(pdMonth)+" dari "+pdQty+" unit terjual." });
+    const flMonth=freelanceMonthNet(mk);
+    const grand=sumTx(monthTx)+pdMonth+(flMonth? flMonth.net:0);
+    if(grand>0 && pdMonth>0){
+      lines.push({ icon:"percent", text:"Produk Digital menyumbang "+Math.round(pdMonth/grand*100)+"% dari Total Bulan Ini." });
+    }
+  }
+  const byChannel=new Map();
+  valid.forEach(e=>{
+    const ch=String(e.channel||"").trim()||"Lainnya";
+    byChannel.set(ch, (byChannel.get(ch)||0)+(Number(e.amount)||0));
+  });
+  const channels=Array.from(byChannel.entries()).filter(c=> c[1]>0).sort((a,b)=> b[1]-a[1]);
+  if(channels.length && t.amount>0){
+    lines.push({ icon:"store", text:"Channel Produk Digital dominan: "+channels[0][0]+" ("+Math.round(channels[0][1]/t.amount*100)+"% dari total pendapatan produk digital)." });
+  }
+  return lines;
+}
 function renderInsight(){
   const mk=F.localMonthKey();
   const txs=F.getTransactions();
   const monthTx=txs.filter(t=> String(t.date||"").slice(0,7)===mk);
   const box=$("#dashboardInsight");
-  if(!monthTx.length){
-    box.innerHTML='<div class="insight-line">'+F.icon("activity")+"<span>Belum ada data bulan ini. Insight muncul setelah ada pesanan tercatat.</span></div>";
-  } else {
+  const lines=[];
+  if(monthTx.length){
     const byCat=new Map();
     monthTx.forEach(t=> byCat.set(t.category||"Lainnya", (byCat.get(t.category||"Lainnya")||0)+1));
     const topCat=Array.from(byCat.entries()).sort((a,b)=> b[1]-a[1])[0];
@@ -199,12 +237,17 @@ function renderInsight(){
     const repeat=customers.filter(c=> c.orders>=2).length;
     const avg=Math.round(sumTx(monthTx)/monthTx.length);
     const biggest=customers[0];
-    const lines=[
+    lines.push(
       { icon:"crown", text:"Layanan terlaris bulan ini: "+topCat[0]+" ("+topCat[1]+" pesanan)." },
       { icon:"repeat", text:repeat+" customer sudah repeat order dari total "+customers.length+" customer." },
       { icon:"calculator", text:"Rata-rata nilai pesanan bulan ini "+F.formatCurrencyValue(avg)+"." },
       { icon:"trophy", text:biggest? "Customer terbesar: "+biggest.name+" dengan total "+F.formatCurrencyValue(biggest.total)+"." : "Belum ada customer tercatat." }
-    ];
+    );
+  }
+  lines.push.apply(lines, digitalInsightLines(mk, monthTx));
+  if(!lines.length){
+    box.innerHTML='<div class="insight-line">'+F.icon("activity")+"<span>Belum ada data bulan ini. Insight muncul setelah ada pesanan tercatat.</span></div>";
+  } else {
     box.innerHTML=lines.map(l=> '<div class="insight-line">'+F.icon(l.icon)+"<span>"+F.esc(l.text)+"</span></div>").join("");
   }
   const top=F.buildCustomers().slice(0,3);
