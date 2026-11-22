@@ -556,7 +556,7 @@ function applyTheme(t){
 }
 function applyBusinessBranding(){
   const p = getBusinessProfile();
-  $$(".brand-name").forEach(el=>{ el.textContent = p.businessName; });
+  $$(".brand-name").forEach(el=>{ el.textContent = String(p.businessName).toUpperCase(); });
   $$(".brand-logo").forEach(el=>{ el.src = p.logo || "logo-glyph.png"; });
 }
 
@@ -672,7 +672,7 @@ function buildShell(){
     "</div>";
   const topbarHTML =
     '<header class="topbar">'+
-      '<a class="top-brand" href="index.html"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"><span class="brand-stack"><span class="brand-name">'+esc(p.businessName)+'</span><span class="top-date top-date-inline">'+esc(dateText)+"</span></span></a>"+
+      '<a class="top-brand" href="index.html"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"><span class="brand-stack"><span class="brand-name">'+esc(String(p.businessName).toUpperCase())+'</span><span class="top-date top-date-inline">'+esc(dateText)+"</span></span></a>"+
       '<div class="top-date-block"><span class="top-weekday">'+esc(weekdayText)+'</span>'+
       '<span class="top-date"><span class="td-day num">'+esc(dayText)+' </span><em class="td-month">'+esc(monthText)+'</em><span class="td-year num"> '+esc(yearText)+"</span></span></div>"+
       '<button type="button" class="top-search" data-global-search aria-label="Buka pencarian global (Ctrl+K)">'+icon("search")+'<span class="top-search-label">Cari customer, pesanan, kategori</span><kbd>Ctrl K</kbd></button>'+

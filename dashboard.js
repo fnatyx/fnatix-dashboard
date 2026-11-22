@@ -17,15 +17,30 @@ function setTrend(el, cur, prev){
   el.className="trend "+(pct>=0?"up":"down");
   el.textContent=(pct>0?"+":"")+pct+"%";
 }
+function freelanceNetOf(entry){
+  const files=F.getFreelanceOrders().filter(o=> String(o.date||"").slice(0,7)===entry.month).length;
+  const target=F.getFreelanceTarget();
+  const cut=files<target? 50:40;
+  const gross=Number(entry.gross)||0;
+  return { entry, files, target, cut, gross, net:Math.round(gross*(100-cut)/100) };
+}
 function freelanceLatestNet(){
   const entries=F.getFreelanceIncome().slice().sort((a,b)=> String(b.month).localeCompare(String(a.month)));
   if(!entries.length) return null;
-  const latest=entries[0];
-  const files=F.getFreelanceOrders().filter(o=> String(o.date||"").slice(0,7)===latest.month).length;
-  const target=F.getFreelanceTarget();
-  const cut=files<target? 50:40;
-  const gross=Number(latest.gross)||0;
-  return { entry:latest, files, target, cut, gross, net:Math.round(gross*(100-cut)/100) };
+  return freelanceNetOf(entries[0]);
+}
+/* Rekap freelance baru terhitung di total bulan berjalan bila periodenya memang bulan ini.
+   Rekap bulan lalu yang masih tampil di kartu ringkasan tidak ikut masuk total. */
+function freelanceMonthNet(mk){
+  const entry=F.getFreelanceIncome().find(e=> String(e.month||"")===mk);
+  return entry? freelanceNetOf(entry) : null;
+}
+/* Pendapatan produk digital bulan berjalan; hanya produk katalog, sama seperti halaman Produk Digital. */
+function produkMonthAmount(mk){
+  const ids=new Set(F.PRODUK_DIGITAL_PRODUCTS.map(p=> p.id));
+  return F.getProdukDigital()
+    .filter(e=> ids.has(e.product) && String(e.date||"").slice(0,7)===mk)
+    .reduce((s,e)=> s+(Number(e.amount)||0),0);
 }
 function renderSummary(){
   const mk=F.localMonthKey();
@@ -49,9 +64,14 @@ function renderSummary(){
     $("#rowFreelance").textContent=F.formatCurrencyValue(0);
     $("#rowFreelanceMeta").textContent="Belum ada rekap gajian tersimpan";
   }
-  $("#rowGrand").textContent=F.formatCurrencyValue(income + (fl? fl.net:0));
+  const flMonth=freelanceMonthNet(mk);
+  const pdMonth=produkMonthAmount(mk);
+  $("#rowGrand").textContent=F.formatCurrencyValue(income + pdMonth + (flMonth? flMonth.net:0));
   const hs=$("#heroStoreVal"); if(hs) hs.textContent=F.formatCurrencyValue(income);
-  const hf=$("#heroFlVal"); if(hf) hf.textContent=F.formatCurrencyValue(fl? fl.net : 0);
+  const hp=$("#heroPdVal"); if(hp) hp.textContent=F.formatCurrencyValue(pdMonth);
+  const hfRow=$("#heroFlRow"); if(hfRow) hfRow.style.display=flMonth? "" : "none";
+  const hf=$("#heroFlVal"); if(hf) hf.textContent=F.formatCurrencyValue(flMonth? flMonth.net : 0);
+  const hn=$("#heroNote"); if(hn) hn.textContent=flMonth? "Fnatix ID, Produk Digital, dan freelance rekap bulan ini" : "Fnatix ID bulan ini ditambah Produk Digital bulan ini";
 }
 function renderRecent(){
   const txs=F.getTransactions().slice().sort((a,b)=> String(b.date).localeCompare(String(a.date))).slice(0,6);
