@@ -763,7 +763,7 @@ body::after{
    melewati padding kartu dan tab Pendapatan terpotong di tepi kanan.
    Di desktop tombol berbagi lebar sama rata dengan padding lebih ramping. */
 @media (min-width:768px){
-  .layanan-head .seg.sm button{ flex:1 1 0; min-width:0; padding:6px 4px; white-space:nowrap; }
+  .layanan-head .seg.sm button{ flex:1 1 0; min-width:0; padding:6px 4px; white-space:nowrap; font-size:11px; }
 }
 
 /* Tabel Pesanan Terbaru dashboard (koreksi owner 23 Nov 2026): lebar
@@ -819,12 +819,12 @@ body::after{
   /* toggle Pesanan/Pendapatan: dua segmen sama lebar, teks muat di kartu */
   .layanan-card{ padding-left:10px; padding-right:10px; }
   .layanan-head .seg.sm{ max-width:100%; padding:2px; }
-  .layanan-head .seg.sm button{ flex:1 1 0; min-width:0; padding:6px 2px; font-size:10.5px;
+  .layanan-head .seg.sm button{ flex:1 1 0; min-width:0; padding:6px 2px; font-size:9.5px;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 }
 @media (max-width:380px){
   .layanan-card{ padding-left:8px; padding-right:8px; }
-  .layanan-head .seg.sm button{ font-size:10px; letter-spacing:-.03em; }
+  .layanan-head .seg.sm button{ font-size:9px; letter-spacing:-.03em; }
 }
 
 /* navigasi liquid glass (HP): bilah bawah melayang, lepas dari tepi layar,
