@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fnatix ID · Pengaturan</title>
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101016">
+<link rel="stylesheet" href="style.css">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+</head>
+<body class="locked" data-page="settings">
+<script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
+<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+  <form class="auth-card" id="authGateForm">
+    <img src="logo.png" alt="Logo Fnatix ID">
+    <h1>Fnatix ID</h1>
+    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <div class="field">
+      <label for="authGatePassword">Password</label>
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
+    <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
+  </form>
+</div>
+<div id="shell"></div>
+
+<main class="sheet-main">
+  <div class="page-head">
+    <div><h1>Pengaturan</h1><p class="sub">Profil bisnis yang dipakai di seluruh web dan struk</p></div>
+  </div>
+  <div class="state-error" id="setError"></div>
+
+  <section class="block">
+    <div class="block-head"><h2>Profil Bisnis</h2></div>
+    <form id="settingsProfileForm">
+      <div class="settings-logo-row">
+        <img id="settingsLogoPreview" src="logo.png" alt="Pratinjau logo bisnis">
+        <div style="display:flex; gap:8px; flex-wrap:wrap">
+          <label class="btn btn-secondary" for="settingsLogoInput" style="cursor:pointer">Unggah Logo</label>
+          <input type="file" id="settingsLogoInput" accept="image/png,image/jpeg,image/webp" class="hidden" aria-label="Pilih file logo">
+          <button type="button" class="btn btn-danger" id="settingsLogoRemove">Hapus Logo</button>
+        </div>
+      </div>
+      <p class="small muted" style="margin:0 0 14px">File PNG, JPG, atau WebP, maksimal 500 KB.</p>
+      <div class="field"><label for="settingsBusinessName">Nama Bisnis</label><input class="control" id="settingsBusinessName"></div>
+      <div class="grid-2">
+        <div class="field"><label for="settingsContactPhone">Nomor WhatsApp / Telepon</label><input class="control" id="settingsContactPhone" inputmode="tel"></div>
+        <div class="field"><label for="settingsContactEmail">Email Bisnis</label><input class="control" id="settingsContactEmail" type="email"></div>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label for="settingsCurrency">Mata Uang</label>
+          <select class="control" id="settingsCurrency">
+            <option value="IDR">IDR, Rupiah</option><option value="USD">USD, Dolar AS</option>
+            <option value="MYR">MYR, Ringgit</option><option value="SGD">SGD, Dolar Singapura</option>
+            <option value="EUR">EUR, Euro</option>
+          </select>
+        </div>
+        <div class="field"><label for="settingsDateFormat">Format Tanggal</label>
+          <select class="control" id="settingsDateFormat">
+            <option value="id-long">30 Januari 2026</option><option value="dd-mm-yyyy">dd-mm-yyyy</option>
+            <option value="mm-dd-yyyy">mm-dd-yyyy</option><option value="yyyy-mm-dd">yyyy-mm-dd</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-actions" style="margin-top:6px">
+        <button type="submit" class="btn btn-primary">Simpan Pengaturan</button>
+      </div>
+      <p class="small" id="settingsSavedHint" style="color:var(--accent-ink); margin-top:10px; display:none">Pengaturan tersimpan dan langsung berlaku di seluruh web.</p>
+    </form>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>Tampilan</h2></div>
+    <div class="theme-row">
+      <p class="muted small" style="margin:0">Tema terang atau gelap berlaku per perangkat dan tersimpan otomatis.</p>
+      <button type="button" class="btn btn-secondary" data-theme-toggle>Ganti Tema</button>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth-gate.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="core.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

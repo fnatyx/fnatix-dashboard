@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fnatix ID · Dashboard</title>
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101016">
+<link rel="stylesheet" href="style.css">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+</head>
+<body class="locked" data-page="dashboard">
+<script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
+<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+  <form class="auth-card" id="authGateForm">
+    <img src="logo.png" alt="Logo Fnatix ID">
+    <h1>Fnatix ID</h1>
+    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <div class="field">
+      <label for="authGatePassword">Password</label>
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
+    <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
+  </form>
+</div>
+<div class="splash" id="splash" aria-hidden="true">
+  <img class="splash-icon" src="splash-icon.png" alt="">
+  <img src="splash-name.png" alt="Fnatix ID">
+</div>
+<div id="shell"></div>
+
+<main class="sheet-main">
+  <div class="page-head">
+    <div><h1 id="dashTitle">Dashboard</h1><p class="sub"><span id="dashPeriod"></span><span aria-hidden="true"> · </span><span id="dashDate"></span></p></div>
+    <div class="head-actions">
+      <button type="button" class="search-chip" id="globalSearchBtn">
+        <i data-lucide="search" class="icon"></i>
+        <span>Cari customer, pesanan, kategori</span>
+        <kbd>Ctrl K</kbd>
+      </button>
+      <button type="button" class="btn btn-primary" id="dashAddBtn"><i data-lucide="plus" class="icon"></i>Tambah Pesanan</button>
+    </div>
+  </div>
+  <div class="state-error" id="dashError"></div>
+
+  <section class="stat-grid" aria-label="Ringkasan bulan ini">
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic pink"><i data-lucide="wallet" class="icon"></i></span><span class="trend" id="rowIncomeTrend"></span></div>
+      <div class="stat-value num" id="rowIncome">-</div>
+      <div class="stat-label">Pendapatan Fnatix ID bulan ini</div>
+      <div class="stat-note" id="sumStoreMeta">Memuat data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic lav"><i data-lucide="receipt-text" class="icon"></i></span><span class="trend" id="rowOrdersTrend"></span></div>
+      <div class="stat-value num"><span id="rowOrders">0</span> <span class="unit" id="rowOrdersUnit">pesanan</span></div>
+      <div class="stat-label">Pesanan bulan ini</div>
+      <div class="stat-note">Dibanding bulan lalu</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic violet"><i data-lucide="briefcase-business" class="icon"></i></span></div>
+      <div class="stat-value num" id="rowFreelance">-</div>
+      <div class="stat-label">Pendapatan Freelance</div>
+      <div class="stat-note" id="rowFreelanceMeta">Rekap terakhir</div>
+    </div>
+    <div class="stat-card">
+      <div class="card-head layanan-head" style="margin-bottom:2px">
+        <h2 style="font-size:13.5px">Layanan Terpopuler</h2>
+        <div class="seg sm" role="group" aria-label="Mode grafik layanan">
+          <button type="button" id="chartModeOrders" class="active">Pesanan</button>
+          <button type="button" id="chartModeRevenue">Pendapatan</button>
+        </div>
+      </div>
+      <div class="donut-box"><canvas id="revenueChart" aria-label="Grafik donat layanan terpopuler"></canvas><div class="donut-center hidden" id="chartCenter"><b id="chartCenterVal">-</b><span id="chartCenterLbl"></span></div></div>
+      <div class="legend hidden" id="chartLegend"></div>
+      <div class="empty hidden" id="chartEmpty" style="padding:14px 6px"><p>Belum ada pesanan bulan ini.</p></div>
+    </div>
+  </section>
+
+  <div class="dash-grid">
+    <section class="card">
+      <div class="card-head"><h2>Grafik Pendapatan Bulan Ini</h2></div>
+      <div class="chart-box"><canvas id="dashTrendChart" aria-label="Grafik garis pendapatan harian bulan ini"></canvas></div>
+      <div class="empty hidden" id="dashChartEmpty"><p>Belum ada pendapatan bulan ini.</p></div>
+    </section>
+    <section class="hero-card" aria-label="Total bulan ini">
+      <div class="hero-top"><span class="hero-ic"><i data-lucide="sigma" class="icon"></i></span><span class="hero-label">Total Bulan Ini</span></div>
+      <div class="hero-value num" id="rowGrand">-</div>
+      <div class="hero-note">Fnatix ID bulan ini ditambah freelance rekap terakhir</div>
+      <div class="hero-divider">
+        <div class="hero-rows">
+          <div class="hero-row"><span class="k">Fnatix ID</span><span class="v num" id="heroStoreVal">-</span></div>
+          <div class="hero-row"><span class="k">Freelance</span><span class="v num" id="heroFlVal">-</span></div>
+        </div>
+        <p class="hero-foot">Total hanya angka tampilan. Data dan laporan Fnatix ID dan Freelance selalu disimpan terpisah.</p>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px">
+    <div class="card-head">
+      <h2>Pesanan Terbaru</h2>
+      <a class="link" href="pesanan.html">Lihat Semua <i data-lucide="arrow-right" class="icon-sm"></i></a>
+    </div>
+    <div class="table-scroll" id="recentTableWrap">
+      <table class="kas-table stacked">
+        <thead><tr><th>Tanggal</th><th>Customer</th><th>Layanan</th><th>Status</th><th class="r">Jumlah</th><th></th></tr></thead>
+        <tbody id="recentTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty hidden" id="recentEmpty">
+      <p>Belum ada pesanan tercatat. Tambahkan pesanan pertama untuk mulai mengisi kas.</p>
+      <button type="button" class="btn btn-primary" id="emptyAddBtn">Tambah Pesanan</button>
+    </div>
+  </section>
+
+  <div class="dash-bottom">
+    <section class="card">
+      <div class="card-head"><h2>Insight</h2></div>
+      <div id="dashboardInsight"></div>
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Top 3 Customer</h2></div>
+      <div id="topCustomerList"></div>
+      <div class="empty hidden" id="topEmpty"><p>Belum ada customer tercatat.</p></div>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth-gate.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="core.js"></script>
+<script src="dashboard.js"></script>
+</body>
+</html>

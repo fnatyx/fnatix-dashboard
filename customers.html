@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fnatix ID · Customers</title>
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101016">
+<link rel="stylesheet" href="style.css">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+</head>
+<body class="locked" data-page="customers">
+<script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
+<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+  <form class="auth-card" id="authGateForm">
+    <img src="logo.png" alt="Logo Fnatix ID">
+    <h1>Fnatix ID</h1>
+    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <div class="field">
+      <label for="authGatePassword">Password</label>
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
+    <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
+  </form>
+</div>
+<div id="shell"></div>
+
+<main class="sheet-main">
+  <div class="page-head">
+    <div><h1>Daftar Customer</h1><p class="sub">Diambil otomatis dari data pesanan</p></div>
+  </div>
+  <div class="state-error" id="custError"></div>
+
+  <section class="stat-grid c3" aria-label="Statistik customer">
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic lav"><i data-lucide="users" class="icon"></i></span></div>
+      <div class="stat-value num" id="customerTotalCount">-</div>
+      <div class="stat-label">Total Customer</div>
+      <div class="stat-note">Semua customer yang pernah order</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic pink"><i data-lucide="repeat" class="icon"></i></span></div>
+      <div class="stat-value num" id="customerRepeatCount">-</div>
+      <div class="stat-label">Customer Repeat Order</div>
+      <div class="stat-note">Order dua kali atau lebih</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic violet"><i data-lucide="wallet" class="icon"></i></span></div>
+      <div class="stat-value num" id="customerTotalSpending">-</div>
+      <div class="stat-label">Total Spending Customer</div>
+      <div class="stat-note">Akumulasi semua pesanan tercatat</div>
+    </div>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="toolbar">
+      <label class="search-inline"><i data-lucide="search" class="icon"></i><input type="text" id="customerSearch" placeholder="Cari nama atau nomor WhatsApp" aria-label="Cari customer"></label>
+    </div>
+    <div id="customerList"></div>
+    <div class="empty hidden" id="custEmpty"><p>Belum ada customer. Customer muncul otomatis setelah ada pesanan.</p></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth-gate.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="core.js"></script>
+<script src="customers.js"></script>
+</body>
+</html>

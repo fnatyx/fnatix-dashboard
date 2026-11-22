@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fnatix ID · Laporan</title>
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101016">
+<link rel="stylesheet" href="style.css">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+</head>
+<body class="locked" data-page="laporan">
+<script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
+<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+  <form class="auth-card" id="authGateForm">
+    <img src="logo.png" alt="Logo Fnatix ID">
+    <h1>Fnatix ID</h1>
+    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <div class="field">
+      <label for="authGatePassword">Password</label>
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
+    <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
+  </form>
+</div>
+<div id="shell"></div>
+
+<main class="sheet-main">
+  <div class="page-head">
+    <div><h1>Laporan Pendapatan</h1><p class="sub">Khusus Fnatix ID, freelance tercatat terpisah di halamannya</p></div>
+  </div>
+  <div class="state-error" id="repError"></div>
+
+  <section class="card" style="margin-top:18px; padding:16px 20px">
+    <div class="toolbar" style="align-items:flex-end; margin:0">
+      <div class="field" style="margin:0">
+        <label for="reportPeriod">Periode</label>
+        <select class="control" id="reportPeriod" style="width:auto">
+          <option value="today">Hari Ini</option>
+          <option value="7days" selected>7 Hari Terakhir</option>
+          <option value="30days">30 Hari Terakhir</option>
+          <option value="month">Bulan Ini</option>
+          <option value="custom">Kustom</option>
+        </select>
+      </div>
+      <div class="field hidden" id="customFromWrap" style="margin:0">
+        <label for="reportCustomFrom">Dari</label>
+        <input class="control" type="date" id="reportCustomFrom" style="width:auto">
+      </div>
+      <div class="field hidden" id="customToWrap" style="margin:0">
+        <label for="reportCustomTo">Sampai</label>
+        <input class="control" type="date" id="reportCustomTo" style="width:auto">
+      </div>
+      <button type="button" class="btn btn-primary hidden" id="applyCustomBtn">Terapkan</button>
+    </div>
+  </section>
+
+  <section class="stat-grid c3" aria-label="Ringkasan laporan">
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic pink"><i data-lucide="wallet" class="icon"></i></span></div>
+      <div class="stat-value num" id="kpiTotal">-</div>
+      <div class="stat-label">Total Pendapatan Periode</div>
+      <div class="stat-note" id="kpiTotalMeta">Memuat data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic lav"><i data-lucide="calendar-days" class="icon"></i></span></div>
+      <div class="stat-value num" id="kpiToday">-</div>
+      <div class="stat-label">Pendapatan Hari Ini</div>
+      <div class="stat-note" id="kpiTodayBadge"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top"><span class="stat-ic violet"><i data-lucide="chart-line" class="icon"></i></span></div>
+      <div class="stat-value num" id="kpiMonth">-</div>
+      <div class="stat-label">Pendapatan Bulan Ini</div>
+      <div class="stat-note" id="kpiMonthBadge"></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>Grafik Pendapatan</h2></div>
+    <div class="chart-box"><canvas id="revenueChartCanvas" aria-label="Grafik garis pendapatan"></canvas></div>
+    <div class="empty hidden" id="chartEmpty"><p>Belum ada pendapatan pada periode ini.</p></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>Pendapatan per Tanggal</h2></div>
+    <div class="table-scroll">
+      <table class="kas-table" id="revenueTable">
+        <thead><tr><th>Tanggal</th><th class="r">Pesanan</th><th class="r">Total</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="empty hidden" id="tableEmpty"><p>Belum ada data pada periode ini.</p></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>Transaksi Terbaru</h2></div>
+    <div id="reportRecent"></div>
+    <div class="empty hidden" id="recentEmpty"><p>Belum ada transaksi tercatat.</p></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head"><h2>Ekspor dan Backup</h2></div>
+    <div class="action-list">
+      <button type="button" class="action-row" id="exportPdfButton">
+        <i data-lucide="file-text" class="icon"></i>
+        <span>Export PDF<small>Laporan pendapatan periode ini sebagai PDF</small></span>
+        <i data-lucide="chevron-right" class="icon chev"></i>
+      </button>
+      <button type="button" class="action-row" id="exportExcelButton">
+        <i data-lucide="file-spreadsheet" class="icon"></i>
+        <span>Export Excel<small>Laporan pendapatan periode ini sebagai Excel</small></span>
+        <i data-lucide="chevron-right" class="icon chev"></i>
+      </button>
+      <button type="button" class="action-row" id="exportBackupButton">
+        <i data-lucide="database-backup" class="icon"></i>
+        <span>Unduh Backup<small>Seluruh data pesanan, freelance, dan pendapatan dalam satu JSON</small></span>
+        <i data-lucide="chevron-right" class="icon chev"></i>
+      </button>
+      <button type="button" class="action-row" id="importBackupButton">
+        <i data-lucide="upload" class="icon"></i>
+        <span>Import Backup<small>Pulihkan data dari file backup JSON</small></span>
+        <i data-lucide="chevron-right" class="icon chev"></i>
+      </button>
+      <input type="file" id="importBackupInput" accept="application/json" class="hidden" aria-label="Pilih file backup untuk diimpor">
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Milestones Bisnis</h2>
+      <button type="button" class="btn btn-ghost btn-sm" id="milestoneExpandBtn">Lihat Semua</button>
+    </div>
+    <div id="milestonesList"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth-gate.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="core.js"></script>
+<script src="laporan.js"></script>
+</body>
+</html>

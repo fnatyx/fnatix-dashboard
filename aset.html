@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fnatix ID · Aset &amp; Pricelist</title>
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#101016">
+<link rel="stylesheet" href="style.css">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+</head>
+<body class="locked" data-page="aset">
+<script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
+<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+  <form class="auth-card" id="authGateForm">
+    <img src="logo.png" alt="Logo Fnatix ID">
+    <h1>Fnatix ID</h1>
+    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <div class="field">
+      <label for="authGatePassword">Password</label>
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+    </div>
+    <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
+    <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
+  </form>
+</div>
+<div id="shell"></div>
+
+<main class="sheet-main">
+  <div class="page-head">
+    <div><h1>Aset &amp; Pricelist</h1><p class="sub">Gudang gambar bisnis dan daftar harga jasa</p></div>
+    <button type="button" class="btn btn-primary" id="addAssetBtn">Tambah Aset</button>
+  </div>
+  <div class="state-error" id="assetError"></div>
+
+  <section class="block">
+    <div class="block-head">
+      <h2>Aset Bisnis</h2>
+      <div class="seg" id="assetFilter" role="group" aria-label="Filter aset">
+        <button type="button" data-filter="all" class="active">Semua</button>
+        <button type="button" data-filter="logo">Logo</button>
+        <button type="button" data-filter="qris">QRIS</button>
+        <button type="button" data-filter="lainnya">Lainnya</button>
+      </div>
+    </div>
+    <div class="asset-grid" id="assetGrid"></div>
+    <div class="empty hidden" id="assetEmpty"><p>Belum ada aset pada filter ini. Tambahkan logo, QRIS, atau gambar bisnis lain.</p></div>
+  </section>
+
+  <section class="block">
+    <div class="block-head" style="flex-wrap:wrap">
+      <h2>Pricelist</h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary btn-sm" id="copyPriceBtn">Salin Teks</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="downloadPriceBtn">Unduh Gambar</button>
+        <button type="button" class="btn btn-primary btn-sm" id="addPriceBtn">Tambah Harga</button>
+      </div>
+    </div>
+    <label class="search-inline" style="margin-top:10px"><i data-lucide="search" class="icon"></i><input type="text" id="priceSearch" placeholder="Cari layanan" aria-label="Cari layanan pricelist"></label>
+    <div class="price-export-card" id="priceExportCard" style="margin-top:14px"><div id="priceList"></div></div>
+    <div class="empty hidden" id="priceEmpty"><p>Belum ada harga tersimpan. Tambahkan layanan pertama ke pricelist.</p></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="auth-gate.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="core.js"></script>
+<script src="aset.js"></script>
+</body>
+</html>
