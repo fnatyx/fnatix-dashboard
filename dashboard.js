@@ -149,7 +149,19 @@ function renderTrend(){
     const d=parseInt(String(t.date).slice(8,10),10);
     if(d>=1 && d<=days) sums[d-1]+=Number(t.price)||0;
   });
-  const has=sums.some(v=> v>0);
+  /* Seri kedua: pendapatan Produk Digital per hari dari buku produkDigital
+     (hanya produk katalog, sama seperti hitungan Produk Digital lainnya).
+     Dua buku tetap terpisah: dua garis sendiri, tidak pernah digabung. */
+  const pdSums=new Array(days).fill(0);
+  try{
+    const pdIds=new Set(F.PRODUK_DIGITAL_PRODUCTS.map(p=> p.id));
+    F.getProdukDigital().filter(e=> pdIds.has(e.product) && String(e.date||"").slice(0,7)===mk).forEach(e=>{
+      const d=parseInt(String(e.date).slice(8,10),10);
+      if(d>=1 && d<=days) pdSums[d-1]+=Number(e.amount)||0;
+    });
+  }catch(e){}
+  const pdHas=pdSums.some(v=> v>0);
+  const has=sums.some(v=> v>0) || pdHas;
   if(!has || !window.Chart){
     canvas.style.display="none";
     if(trendInst){ trendInst.destroy(); trendInst=null; }
@@ -172,14 +184,24 @@ function renderTrend(){
     g.addColorStop(1,"rgba(167,139,250,.02)");
     fill=g;
   }catch(e){}
+  let pdFill="rgba(139,92,246,.12)";
+  try{
+    const g2=ctx.createLinearGradient(0,0,0,260);
+    g2.addColorStop(0,"rgba(139,92,246,.26)");
+    g2.addColorStop(1,"rgba(139,92,246,.02)");
+    pdFill=g2;
+  }catch(e){}
+  const datasets=[{ label:"Fnatix ID", data:sums, borderColor:"#F471B5", backgroundColor:fill, fill:true, tension:.4,
+    pointRadius:0, pointHoverRadius:4, pointBackgroundColor:"#A78BFA", borderWidth:2 }];
+  if(pdHas) datasets.push({ label:"Produk Digital", data:pdSums, borderColor:"#8B5CF6", backgroundColor:pdFill, fill:true, tension:.4,
+    pointRadius:0, pointHoverRadius:4, pointBackgroundColor:"#C4B5FD", borderWidth:2 });
   trendInst=new window.Chart(ctx, { type:"line",
-    data:{ labels:sums.map((_,i)=> String(i+1)),
-      datasets:[{ data:sums, borderColor:"#F471B5", backgroundColor:fill, fill:true, tension:.4,
-        pointRadius:0, pointHoverRadius:4, pointBackgroundColor:"#A78BFA", borderWidth:2 }] },
+    data:{ labels:sums.map((_,i)=> String(i+1)), datasets },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false },
+      plugins:{ legend:{ display:pdHas, position:"top", align:"end",
+          labels:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, usePointStyle:true, boxWidth:6, boxHeight:6, padding:12 } },
         tooltip:{ callbacks:{ title(items){ return "Tanggal "+(items[0]? items[0].label : ""); },
-          label(c){ return " "+F.formatCurrencyValue(c.parsed.y); } } } },
+          label(c){ return " "+(c.dataset.label? c.dataset.label+": ":"")+F.formatCurrencyValue(c.parsed.y); } } } },
       scales:{ x:{ grid:{ display:false }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, maxTicksLimit:10 } },
         y:{ grid:{ color:grid }, border:{ display:false }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, maxTicksLimit:5,
           callback:v=> "Rp"+Number(v).toLocaleString("id-ID") } } } } });
