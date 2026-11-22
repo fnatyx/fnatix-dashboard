@@ -163,8 +163,6 @@ body.locked .app{visibility:hidden}
   .top-search kbd{margin-left:auto; font-family:var(--font-grotesk); font-size:11px; letter-spacing:.06em;
     color:var(--ink-3); border:1px solid var(--hair-2); border-bottom-width:2px; border-radius:6px;
     padding:2px 7px; background:var(--surface)}
-  .search-chip span{font-family:var(--font-serif); font-style:italic; font-size:15.5px}
-  .search-chip kbd{font-family:var(--font-grotesk); letter-spacing:.05em}
 }
 @media (max-width:900px){
   .top-date-block, .top-search{display:none}
@@ -270,15 +268,9 @@ select.control{appearance:none}
 .search-inline .icon{color:var(--ink-3); width:17px; height:17px}
 .search-inline input{border:0; outline:none; background:transparent; color:var(--ink); min-width:0;
   font-family:inherit; font-size:14px; padding:11px 0; width:100%}
-.search-chip{display:inline-flex; align-items:center; gap:9px; border:1px solid var(--control-border);
-  border-radius:14px; background:var(--surface-2); padding:0 14px; min-height:44px; cursor:pointer;
-  color:var(--ink-3); font-family:inherit; font-size:13.5px;
-  transition:border-color .18s ease, box-shadow .18s ease}
-.search-chip:hover{border-color:var(--accent)}
-.search-chip .icon{color:var(--accent-ink); width:17px; height:17px}
-.search-chip kbd{margin-left:6px; font-family:inherit; font-size:11px; color:var(--ink-3);
-  border:1px solid var(--hair-2); border-bottom-width:2px; border-radius:6px; padding:2px 7px;
-  background:var(--surface)}
+/* pencarian tunggal versi HP: bar di area page-head, hanya tampil <=900px
+   (di desktop satu-satunya pencarian adalah .top-search di header) */
+.page-search{display:none}
 .state-error{display:none; border:1px solid var(--danger); background:var(--danger-soft);
   color:var(--danger-ink); border-radius:14px; padding:11px 14px; font-size:13px; margin-top:16px}
 .state-error.show{display:block}
@@ -787,11 +779,23 @@ body::after{
    Dashboard dibuang (tanggal tetap di topbar), elemen naik, search HP
    selebar konten, toggle donat rapi, navigasi liquid glass ===== */
 
-/* search dashboard: selebar lebar konten di HP, chip Ctrl K pindah ke kanan */
+/* search dashboard: satu kontrol saja — di HP tampil sebagai bar selebar
+   konten di area page-head, gaya sama dengan pencarian header desktop */
 @media (max-width:900px){
   body[data-page="dashboard"] .head-actions{ flex:1 1 100%; width:100%; }
-  body[data-page="dashboard"] .search-chip{ flex:1 1 auto; width:100%; }
-  body[data-page="dashboard"] .search-chip kbd{ margin-left:auto; }
+  .page-search{display:inline-flex; align-items:center; gap:10px; flex:1 1 auto; width:100%;
+    min-height:48px; padding:0 16px;
+    border:1px solid var(--control-border); border-radius:14px; background:var(--surface-2);
+    color:var(--ink-2); font-family:inherit; cursor:pointer;
+    transition:border-color .18s ease, box-shadow .18s ease}
+  .page-search:hover{border-color:var(--accent)}
+  .page-search:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+  .page-search .icon{color:var(--azure-ink); width:18px; height:18px; flex:none}
+  .page-search-label{font-family:var(--font-serif); font-style:italic; font-size:16.5px; color:var(--ink-2);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .page-search kbd{margin-left:auto; font-family:var(--font-grotesk); font-size:11px; letter-spacing:.06em;
+    color:var(--ink-3); border:1px solid var(--hair-2); border-bottom-width:2px; border-radius:6px;
+    padding:2px 7px; background:var(--surface)}
 }
 @media (max-width:767px){
   /* elemen dashboard naik: jarak grid statistik diperkecil */

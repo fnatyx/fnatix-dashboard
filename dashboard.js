@@ -313,7 +313,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     window.__onThemeChange=()=>{ renderChart(); renderTrend(); renderProdukChart(); };
     $("#dashAddBtn").addEventListener("click", ()=> F.openOrderModal(null, render));
     const eb=$("#emptyAddBtn"); if(eb) eb.addEventListener("click", ()=> F.openOrderModal(null, render));
-    $("#globalSearchBtn").addEventListener("click", ()=> F.openGlobalSearch());
     $("#chartModeOrders").addEventListener("click", ()=>{ chartMode="orders"; $("#chartModeOrders").classList.add("active"); $("#chartModeRevenue").classList.remove("active"); renderChart(); });
     $("#chartModeRevenue").addEventListener("click", ()=>{ chartMode="revenue"; $("#chartModeRevenue").classList.add("active"); $("#chartModeOrders").classList.remove("active"); renderChart(); });
   }catch(e){
