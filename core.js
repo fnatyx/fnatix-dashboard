@@ -651,7 +651,7 @@ function buildShell(){
   navLinks.push({ id:"sistem", label:"Sistem", href:"sistem-fnatix.html", icon:"waypoints" });
   const railHTML =
     '<aside class="rail">'+
-      '<a class="rail-brand" href="index.html" aria-label="'+esc(p.businessName)+'"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"></a>'+
+      '<a class="rail-brand" href="index.html" aria-label="'+esc(String(p.businessName).toUpperCase())+'"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"></a>'+
       '<nav class="rail-nav" aria-label="Navigasi halaman">'+
         '<span class="rail-ind" aria-hidden="true"></span>'+
         navLinks.map(n=> '<a class="rail-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+icon(n.icon)+"</a>").join("")+

@@ -758,6 +758,22 @@ body::after{
 .donut-box{ width:148px; height:148px; }
 .layanan-head{ flex-direction:column; align-items:stretch; }
 .layanan-head .seg.sm{ width:100%; }
+/* Toggle donat di desktop (koreksi owner 23 Nov 2026): tanpa min-width:0
+   tombol seg tidak bisa menyusut di bawah lebar teksnya, jadi seg melebar
+   melewati padding kartu dan tab Pendapatan terpotong di tepi kanan.
+   Di desktop tombol berbagi lebar sama rata dengan padding lebih ramping. */
+@media (min-width:768px){
+  .layanan-head .seg.sm button{ flex:1 1 0; min-width:0; padding:6px 4px; white-space:nowrap; }
+}
+
+/* Tabel Pesanan Terbaru dashboard (koreksi owner 23 Nov 2026): lebar
+   min-content tabel 843px di kartu selebar 812px membuat kolom aksi
+   terpotong di tepi kartu. Padding sel diperkecil dan tombol aksi 38px
+   khusus tabel ini; halaman Pesanan dan tabel lain tidak berubah. */
+@media (min-width:768px){
+  #recentTableWrap table.kas-table th, #recentTableWrap table.kas-table td{ padding-left:8px; padding-right:8px; }
+  #recentTableWrap .row-actions .icon-btn{ width:38px; height:38px; }
+}
 .legend .val{ color:var(--ink-3); font-weight:600; white-space:nowrap; }
 
 
