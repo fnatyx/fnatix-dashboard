@@ -123,7 +123,8 @@ const PRODUK_DIGITAL_PRODUCTS = [
   { id:"relight", label:"Relight", price:35000 },
   { id:"graduation", label:"Graduation", price:30000 },
   { id:"wedding", label:"Wedding", price:30000 },
-  { id:"bundle", label:"Paket Bundle 3-in-1", price:80000 }
+  { id:"bundle", label:"Paket Bundle 3-in-1", price:80000 },
+  { id:"poplab", label:"FNATIX POP LAB", price:25000 }
 ];
 function getProdukDigital(){ const t = getData("produkDigital", []); return Array.isArray(t)? normIds(t) : []; }
 function saveProdukDigital(list){ setData("produkDigital", list); }

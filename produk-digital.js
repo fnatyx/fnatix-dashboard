@@ -4,7 +4,7 @@
 const F=window.F, $=F.$, $$=F.$$;
 const PRODUCTS=F.PRODUK_DIGITAL_PRODUCTS;
 const CHANNELS=["Lynk","PayPal","QRIS","WhatsApp","Lainnya"];
-const ICONS={ relight:"sun", graduation:"graduation-cap", wedding:"heart", bundle:"package" };
+const ICONS={ relight:"sun", graduation:"graduation-cap", wedding:"heart", bundle:"package", poplab:"sparkles" };
 
 function productOf(id){ return PRODUCTS.find(p=> p.id===id) || { id:id, label:id||"-", price:0 }; }
 function totals(){
