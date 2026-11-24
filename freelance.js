@@ -159,7 +159,7 @@ function openFreelanceModal(order){
       </div>
       <div class="field"><label for="foDate">Tanggal</label><input class="control" type="date" id="foDate" value="${F.esc(order?order.date:F.localDateKey())}"></div>
       <div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
-      <button type="submit" class="btn btn-amber">${isEdit?"Simpan Perubahan":"Tambah Pesanan"}</button></div>
+      <button type="submit" class="btn btn-primary">${isEdit?"Simpan Perubahan":"Tambah Pesanan"}</button></div>
     </form>`);
   $("#foForm",ov).addEventListener("submit", e=>{
     e.preventDefault();
@@ -252,7 +252,7 @@ function renderIncomeList(){
     return `
     <div class="lrow">
       <div class="grow"><div class="title">${F.esc(F.monthLabel(e.month))}</div><div class="sub">Gross ${F.esc(F.formatCurrencyValue(e.gross))}, potongan ${cut.percent}%</div></div>
-      <span class="amount num" style="color:var(--fl-ink)">${F.esc(F.formatCurrencyValue(net))}</span>
+      <span class="amount num">${F.esc(F.formatCurrencyValue(net))}</span>
       <div class="row-actions">
         <button type="button" class="icon-btn" data-inc-edit="${e.id}" aria-label="Edit gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("pencil","icon-sm")}</button>
         <button type="button" class="icon-btn danger" data-inc-del="${e.id}" aria-label="Hapus gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("trash-2","icon-sm")}</button>
@@ -299,7 +299,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         <form id="targetForm"><div class="field"><label for="targetInput">Target file per bulan</label>
         <input class="control num" type="number" id="targetInput" min="1" value="${F.getFreelanceTarget()}"></div>
         <div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Batal</button>
-        <button type="submit" class="btn btn-amber">Simpan Target</button></div></form>`);
+        <button type="submit" class="btn btn-primary">Simpan Target</button></div></form>`);
       $("#targetForm",ov).addEventListener("submit", e=>{
         e.preventDefault();
         const v=parseInt($("#targetInput",ov).value,10);

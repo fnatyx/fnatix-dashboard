@@ -5,10 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FNATIX ID · Customers</title>
 <link rel="icon" href="favicon.ico">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#090A09">
-<link rel="stylesheet" href="style.css?v=lg2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FNATIX ID">
+<link rel="stylesheet" href="style.css?v=lg4">
 <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
 <body class="locked is-data-loading" data-page="customers">
@@ -31,11 +35,8 @@
 <main class="sheet-main">
   <div class="page-head">
     <div class="page-head-main">
-      <div class="page-title-row">
-        <h1>Customers</h1>
-        <span class="page-pill lime"><span class="legend-dot" style="background:var(--accent)"></span><span>FNATIX ID</span></span>
-      </div>
-      <p class="sub">Direktori pelanggan otomatis dari riwayat pesanan Jasa Edit.</p>
+      <h1>Daftar <span class="h-light">Customers</span></h1>
+      <p class="sub"><span class="sub-lead lime">FNATIX ID</span> · Direktori pelanggan otomatis dari riwayat pesanan Jasa Edit.</p>
     </div>
   </div>
 
@@ -78,8 +79,8 @@
 <script src="supabase-config.js"></script>
 <script src="auth-gate.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="refraction.js?v=lg2"></script>
-<script src="core.js?v=lg2"></script>
+<script src="refraction.js?v=lg4"></script>
+<script src="core.js?v=lg4"></script>
 <script src="customers.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>

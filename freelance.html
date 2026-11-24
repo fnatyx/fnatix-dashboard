@@ -5,10 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>FNATIX ID · Jasa Edit Freelance</title>
 <link rel="icon" href="favicon.ico">
-<link rel="apple-touch-icon" href="logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#090A09">
-<link rel="stylesheet" href="style.css?v=lg2">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FNATIX ID">
+<link rel="stylesheet" href="style.css?v=lg4">
 <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
 <body class="locked is-data-loading" data-page="freelance">
@@ -31,14 +35,11 @@
 <main class="sheet-main">
   <div class="page-head">
     <div class="page-head-main">
-      <div class="page-title-row">
-        <h1>Jasa Edit Freelance</h1>
-        <span class="page-pill sky"><span class="legend-dot" style="background:var(--fl)"></span><span>Buku Terpisah</span></span>
-      </div>
-      <p class="sub">Pelacakan target file, potongan, dan rekap gajian per admin.</p>
+      <h1>Jasa Edit <span class="h-light">Freelance</span></h1>
+      <p class="sub"><span class="sub-lead sky">Buku Terpisah</span> · Target file, potongan, dan rekap gajian per admin.</p>
     </div>
     <div class="head-actions">
-      <button type="button" class="btn btn-amber" id="addFreelanceBtn"><i data-lucide="plus" aria-hidden="true" class="icon"></i>Tambah Pesanan</button>
+      <button type="button" class="btn btn-primary" id="addFreelanceBtn"><i data-lucide="plus" aria-hidden="true" class="icon"></i>Tambah Pesanan</button>
     </div>
   </div>
 
@@ -48,7 +49,7 @@
   <div class="state-error" id="flError" role="alert"></div>
 
   <section class="split-even" aria-label="Target dan distribusi admin" style="margin-bottom:16px">
-    <section class="card" aria-label="Target orderan bulanan">
+    <section class="card freelance-target-card" aria-label="Target orderan bulanan">
       <div class="card-head">
         <h2>Target Orderan Bulanan</h2>
         <button type="button" class="btn btn-secondary btn-sm" id="editTargetBtn">Ubah Target</button>
@@ -105,7 +106,7 @@
         </div>
         <div class="field"><label for="batchTotal">Total Harga (Rp)</label><input class="control num" type="number" min="0" step="5000" id="batchTotal" placeholder="1500000"></div>
         <div id="batchPreview" class="small muted" style="margin-bottom:12px">Pilih bulan dan admin untuk melihat pratinjau.</div>
-        <button type="button" class="btn btn-amber" id="applyBatchPricingButton" style="width:100%">Terapkan ke Semua File</button>
+        <button type="button" class="btn btn-primary" id="applyBatchPricingButton" style="width:100%">Terapkan ke Semua File</button>
       </section>
 
       <section class="card" aria-label="Pendapatan Freelance Bulanan">
@@ -117,7 +118,7 @@
           </div>
           <div id="freelanceMonthAdminBreakdown" class="small muted" style="margin-bottom:10px"></div>
           <div id="freelanceCutPreview" class="small" style="margin-bottom:12px"></div>
-          <button type="submit" class="btn btn-amber" style="width:100%">Simpan Pendapatan</button>
+          <button type="submit" class="btn btn-primary" style="width:100%">Simpan Pendapatan</button>
         </form>
         <div class="ledger" id="freelanceIncomeList" style="margin-top:14px"></div>
         <div class="empty hidden" id="incomeEmpty"><p>Belum ada riwayat gajian tersimpan.</p></div>
@@ -131,8 +132,8 @@
 <script src="auth-gate.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="refraction.js?v=lg2"></script>
-<script src="core.js?v=lg2"></script>
+<script src="refraction.js?v=lg4"></script>
+<script src="core.js?v=lg4"></script>
 <script src="freelance.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>

@@ -16,6 +16,7 @@
 }
 
 :root{
+  color-scheme:light;
   --font:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
 
   /* Light Mode: Crisp Vibrant Daylight Fintech */
@@ -51,21 +52,21 @@
   --btn-primary-hover:#C4F028;
   --btn-primary-fg:#0F172A;
 
-  /* Category 2: Penjualan Produk Digital (Vivid Emerald) */
+  /* Category 2: Penjualan Produk Digital (Vivid Emerald Indicator + Unified Electric Lime CTA) */
   --pd:#10B981;
   --pd-ink:#047857;
   --pd-soft:#ECFDF5;
   --pd-border:#6EE7B7;
-  --btn-pd-bg:#047857;
-  --btn-pd-fg:#FFFFFF;
+  --btn-pd-bg:#D6FF3F;
+  --btn-pd-fg:#0F172A;
 
-  /* Category 1B: Jasa Edit Freelance (Vivid Sky Cyan) */
+  /* Category 1B: Jasa Edit Freelance (Vivid Sky Cyan Indicator + Unified Electric Lime CTA) */
   --fl:#0EA5E9;
   --fl-ink:#0369A1;
   --fl-soft:#F0F9FF;
   --fl-border:#7DD3FC;
-  --btn-fl-bg:#0369A1;
-  --btn-fl-fg:#FFFFFF;
+  --btn-fl-bg:#D6FF3F;
+  --btn-fl-fg:#0F172A;
 
   /* Semantic States */
   --ok:#10B981;
@@ -102,6 +103,7 @@
 }
 
 [data-theme="dark"]{
+  color-scheme:dark;
   /* Dark Mode: Fincro Electric Lime Obsidian */
   --bg:#090A09;
   --rail-bg:#0E100E;
@@ -140,16 +142,16 @@
   --pd-ink:#34D399;
   --pd-soft:rgba(52,211,153,.11);
   --pd-border:rgba(52,211,153,.26);
-  --btn-pd-bg:#34D399;
-  --btn-pd-fg:#090A09;
+  --btn-pd-bg:#D6FF3F;
+  --btn-pd-fg:#0B0D0A;
 
   /* Sky Cyan */
   --fl:#38BDF8;
   --fl-ink:#38BDF8;
   --fl-soft:rgba(56,189,248,.11);
   --fl-border:rgba(56,189,248,.26);
-  --btn-fl-bg:#38BDF8;
-  --btn-fl-fg:#090A09;
+  --btn-fl-bg:#D6FF3F;
+  --btn-fl-fg:#0B0D0A;
 
   /* Semantic States */
   --ok:#34D399;
@@ -645,33 +647,31 @@ select.control::picker-icon{ display:none; }
    PAGE HEADERS, CLEAN FINCRO CARDS & STATES
    ========================================================================== */
 .page-head{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:14px; flex-wrap:wrap;
-  padding-bottom:16px; border-bottom:1px solid var(--hair); margin-bottom:18px;
+  display:flex; align-items:flex-end; justify-content:space-between;
+  gap:16px; flex-wrap:wrap;
+  padding-bottom:18px; border-bottom:1px solid var(--hair); margin-bottom:20px;
 }
 .page-head-main{ min-width:0; }
-.page-title-row{
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-}
 .page-head h1{
-  font-size:clamp(22px, 2.4vw, 28px); line-height:1.15; font-weight:800;
-  margin:0; letter-spacing:-.028em;
+  font-size:clamp(26px, 3vw, 34px); line-height:1.06; font-weight:800;
+  margin:0; letter-spacing:-.04em; color:var(--ink);
 }
-.page-pill{
-  display:inline-flex; align-items:center; gap:6px;
-  padding:4px 10px; border-radius:99px; font-size:11.5px; font-weight:700;
-  background:var(--surface-2); color:var(--ink-2); border:1px solid var(--hair-2);
-  white-space:nowrap;
+.page-head h1 .h-light{
+  font-weight:500; color:var(--ink-2); letter-spacing:-.03em;
 }
-.page-pill.lime{ background:var(--accent-soft); color:var(--accent-ink); border-color:var(--accent-border); }
-.page-pill.emerald{ background:var(--pd-soft); color:var(--pd-ink); border-color:var(--pd-border); }
-.page-pill.sky{ background:var(--fl-soft); color:var(--fl-ink); border-color:var(--fl-border); }
-.page-head .sub, .sub{ color:var(--ink-2); font-size:13.5px; margin:6px 0 0; }
+.page-head .sub, .sub{
+  color:var(--ink-2); font-size:14px; line-height:1.5; margin:8px 0 0;
+  letter-spacing:-.01em; font-weight:400;
+}
+.sub-lead{ font-weight:700; color:var(--ink); }
+.sub-lead.lime{ color:var(--accent-ink); }
+.sub-lead.emerald{ color:var(--pd-ink); }
+.sub-lead.sky{ color:var(--fl-ink); }
 .head-actions{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 
 .card, .block{
   background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-card);
-  padding:20px 22px; box-shadow:var(--shadow-sm);
+  padding:20px 22px; box-shadow:var(--shadow-sm); min-width:0;
 }
 .block{ margin-top:16px; }
 .card-head, .block-head{
@@ -969,30 +969,41 @@ button.cust-cell .meta{ color:var(--ink-2); font-size:12.5px; margin-top:1px; }
    SUB-PAGE LAYOUTS (Clean Fincro Metric Cards + Workspaces)
    ========================================================================== */
 .summary-band-3{
-  display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:16px;
+  display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin-bottom:16px;
 }
 .summary-tile{
   background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-card);
-  padding:16px 20px; box-shadow:var(--shadow-sm);
+  padding:16px 20px; box-shadow:var(--shadow-sm); min-width:0;
 }
 .summary-tile .st-lbl{ font-size:12.5px; font-weight:600; color:var(--ink-2); }
 .summary-tile .st-val{ font-size:23px; font-weight:800; line-height:1.15; margin-top:6px; letter-spacing:-.02em; }
 .summary-tile .st-note{ font-size:12px; color:var(--ink-3); margin-top:4px; }
 
 .split-2-col{ display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(300px, 1fr); gap:16px; align-items:start; }
-.split-even{ display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
-.dash-right-stack{ display:flex; flex-direction:column; gap:16px; }
+.split-even{ display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:16px; align-items:start; }
+.dash-right-stack{ display:flex; flex-direction:column; gap:16px; min-width:0; }
 
 .pd-summary-strip{
   background:var(--surface); border:1px solid var(--hair);
   border-radius:var(--r-card); padding:18px 22px; margin-bottom:16px;
   display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
-  box-shadow:var(--shadow-sm);
+  box-shadow:var(--shadow-sm); min-width:0;
 }
-.pd-summary-strip .pd-sum-label{ font-size:12.5px; font-weight:600; color:var(--pd-ink); }
-.pd-summary-strip .pd-sum-val{ font-size:25px; font-weight:800; line-height:1.15; margin-top:3px; color:var(--ink); }
+body[data-page="produk"] .pd-summary-strip{ background:#ECFDF5; border-color:#A7F3D0; }
+body[data-page="pesanan"] .summary-tile:first-child{ background:#F7FEE7; border-color:#D9F99D; }
+body[data-page="freelance"] .freelance-target-card{ background:#F0F9FF; border-color:#BAE6FD; }
+[data-theme="dark"] body[data-page="produk"] .pd-summary-strip,
+[data-theme="dark"] body[data-page="pesanan"] .summary-tile:first-child,
+[data-theme="dark"] body[data-page="freelance"] .freelance-target-card{
+  background:var(--surface); border-color:var(--hair);
+}
+.pd-summary-strip .pd-sum-label{
+  display:inline-flex; align-items:center; gap:7px;
+  font-size:12.5px; font-weight:600; color:var(--ink-2);
+}
+.pd-summary-strip .pd-sum-val{ font-size:25px; font-weight:800; line-height:1.15; margin-top:4px; color:var(--ink); }
 .pd-catalog-grid{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:12px; margin-bottom:16px;
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(min(210px, 100%), 1fr)); gap:12px; margin-bottom:16px;
 }
 .pd-item-card{
   background:var(--surface); border:1px solid var(--hair); border-radius:var(--r-card);
@@ -1239,21 +1250,32 @@ body.locked .auth-gate{ display:flex; }
    RESPONSIVE BREAKPOINTS
    ========================================================================== */
 @media (max-width:1100px){
-  .fincro-sub-grid{ grid-template-columns:1fr; }
-  .dash-mid-band, .dash-bottom, .split-2-col{ grid-template-columns:1fr; }
+  .fincro-sub-grid{ grid-template-columns:minmax(0, 1fr); }
+  .dash-mid-band, .dash-bottom, .split-2-col{ grid-template-columns:minmax(0, 1fr); }
 }
 @media (max-width:767px){
   .card, .block, .fincro-hero-card{ padding:16px; border-radius:16px; }
-  .pd-dash-grid{ grid-template-columns:1fr; }
-  .pd-stats{ grid-template-columns:1fr 1fr; }
+  .pd-dash-grid{ grid-template-columns:minmax(0, 1fr); }
+  .pd-stats{ grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); }
   .pd-stats > div:first-child{ grid-column:1 / -1; }
-  .summary-band-3, .split-even, .grid-2{ grid-template-columns:1fr; }
+  .summary-band-3, .split-even, .grid-2{ grid-template-columns:minmax(0, 1fr); }
   .chart-box{ height:220px; }
   .modal-actions .btn{ flex:1; }
-  .toolbar > *{ flex:1; }
-  .toolbar .icon-btn{ flex:none; }
+  .toolbar{ gap:8px; }
+  .toolbar > *, .toolbar .control, .toolbar .search-inline{
+    flex:1 1 100% !important; width:100% !important; min-width:0 !important;
+  }
+  .toolbar .icon-btn{ flex:none !important; width:44px !important; }
   .head-actions{ width:100%; }
   .head-actions .btn{ flex:1; }
+  .month-nav{ width:100%; justify-content:space-between; }
+  .month-nav .m-label{ min-width:0; }
+  .lrow{ flex-wrap:wrap; row-gap:6px; gap:8px; padding:12px 0; }
+  .lrow .grow{ flex:1 1 140px; min-width:140px; }
+  .lrow .amount{ margin-left:auto; }
+  .pd-summary-strip{ gap:14px; padding:16px; }
+  .action-row > span{ white-space:normal; }
+  .field{ min-width:0; }
 
   table.kas-table.stacked, table.kas-table.stacked tbody, table.kas-table.stacked tr,
   table.kas-table.stacked td{ display:block; width:100%; }

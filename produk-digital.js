@@ -97,7 +97,7 @@ function openProdukModal(entry){
       '<div class="field"><label for="pdNote">Catatan</label><input class="control" id="pdNote" value="'+F.esc(cur.note||"")+'" placeholder="Catatan penjualan" autocomplete="off"></div>'+
       '<p class="error-text" id="pdFormError"></p>'+
       '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Batal</button>'+
-      '<button type="submit" class="btn btn-pd">'+(isEdit? "Simpan Perubahan" : "Tambah Penjualan")+'</button></div>'+
+      '<button type="submit" class="btn btn-primary">'+(isEdit? "Simpan Perubahan" : "Tambah Penjualan")+'</button></div>'+
     '</form>');
   const syncAmount=()=>{
     const p=productOf($("#pdProduct", ov).value);

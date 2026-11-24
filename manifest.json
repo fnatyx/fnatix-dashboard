@@ -1,1 +1,31 @@
-{"background_color":"#090A09","description":"Dasbor kas FNATIX ID: Pendapatan Jasa Edit (FNATIX ID & Freelance) dan Penjualan Produk Digital","display":"standalone","icons":[{"purpose":"any maskable","sizes":"1024x1024","src":"logo-maskable.png","type":"image/png"},{"purpose":"any","sizes":"512x512","src":"logo.png","type":"image/png"}],"name":"FNATIX ID","scope":"./","short_name":"FNATIX ID","start_url":"./index.html","theme_color":"#090A09"}
+{
+  "id": "./",
+  "name": "FNATIX ID",
+  "short_name": "FNATIX ID",
+  "description": "Dasbor FNATIX ID: Pendapatan Jasa Edit (FNATIX ID & Freelance) dan Penjualan Produk Digital",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#090A09",
+  "theme_color": "#090A09",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "logo-maskable.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
