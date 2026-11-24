@@ -897,18 +897,26 @@ function updateNavOrderBadge(){
 }
 dataReady.then(()=>{ updateNavOrderBadge(); $$(".sk-val").forEach(el=> el.classList.remove("sk-val")); }).catch(()=>{});
 
-/* splash (ringkas, tanpa animasi berulang) */
+/* splash (selaras dengan readiness data, sekali per sesi) */
 function initSplash(){
   const sp = $("#splash");
   if(!sp) return;
   let seen = false;
   try{ seen = sessionStorage.getItem("fnatixSplashSeen") === "1"; }catch(e){}
   if(seen){ sp.remove(); return; }
-  setTimeout(()=>{
+  const isLocked = document.body.classList.contains("locked");
+  const minHold = new Promise(r=> setTimeout(r, 900));
+  const dataWait = isLocked
+    ? Promise.resolve()
+    : Promise.race([
+        dataReady.catch(()=>{}),
+        new Promise(r=> setTimeout(r, 1550))
+      ]);
+  Promise.all([minHold, dataWait]).then(()=>{
     sp.classList.add("hide");
     try{ sessionStorage.setItem("fnatixSplashSeen", "1"); }catch(e){}
-    setTimeout(()=> sp.remove(), 350);
-  }, 750);
+    setTimeout(()=> sp.remove(), 460);
+  });
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{

@@ -12,7 +12,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="FNATIX ID">
-<link rel="stylesheet" href="style.css?v=lg4">
+<link rel="stylesheet" href="style.css?v=lg5">
 <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
 <body class="locked is-data-loading" data-page="dashboard">
@@ -20,7 +20,7 @@
 <div class="auth-gate" role="dialog" aria-modal="true" aria-label="Masuk ke FNATIX ID">
   <form class="auth-card" id="authGateForm">
     <img width="60" height="60" src="logo.png" alt="Logo FNATIX ID">
-    <h1>FNATIX ID</h1>
+    <h1>FNATIX <span class="h-light">ID</span></h1>
     <p>Kelola pesanan, kas, dan laporan FNATIX ID. Masukkan password untuk melanjutkan.</p>
     <div class="field">
       <label for="authGatePassword">Password</label>
@@ -31,11 +31,34 @@
   </form>
 </div>
 <div class="splash" id="splash" aria-hidden="true">
-  <img class="splash-icon" width="84" height="84" src="splash-icon.png" decoding="sync" fetchpriority="high" alt="">
-  <div class="splash-title">FNATIX ID</div>
-  <div class="splash-sub">Jasa Edit &amp; Produk Digital</div>
-  <div class="splash-track"><span class="splash-bar"></span></div>
+  <div class="splash-ambient" aria-hidden="true">
+    <span class="splash-orb splash-orb-a"></span>
+    <span class="splash-orb splash-orb-b"></span>
+  </div>
+  <div class="splash-stage">
+    <div class="splash-emblem-wrap">
+      <span class="splash-ring" aria-hidden="true"></span>
+      <div class="splash-emblem">
+        <svg class="splash-svg" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+          <rect x="13" y="13.5" width="6.5" height="3.5" rx="1.75" fill="currentColor"/>
+          <path d="M37.5 16.5H24.6C23.3 16.5 22.1 17.2 21.5 18.3L20.3 20.5H15.8C12.9 20.5 10.5 22.9 10.5 25.8V44.7C10.5 47.6 12.9 50 15.8 50H44.2C47.1 50 49.5 47.6 49.5 44.7V34.5" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M35.2 28.4C33.9 27.1 32.1 26.3 30 26.3C25.8 26.3 22.4 29.7 22.4 33.9C22.4 38.1 25.8 41.5 30 41.5C33.4 41.5 36.2 39.3 37.2 36.2" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+          <path class="splash-bolt" d="M47.2 10.5L35.4 29.6H43.4L39.8 44.5L54.2 24.4H45.8L47.2 10.5Z" fill="currentColor"/>
+        </svg>
+      </div>
+    </div>
+    <div class="splash-copy">
+      <div class="splash-kicker">STUDIO LEDGER</div>
+      <div class="splash-title">FNATIX <span class="splash-title-light">ID</span></div>
+      <div class="splash-sub">Jasa Edit &amp; Produk Digital</div>
+    </div>
+    <div class="splash-progress">
+      <div class="splash-track"><span class="splash-bar"></span></div>
+      <div class="splash-status">Menyiapkan workspace...</div>
+    </div>
+  </div>
 </div>
+<script>try{if(sessionStorage.getItem('fnatixSplashSeen')==='1'){var _sp=document.getElementById('splash');if(_sp)_sp.remove();}}catch(e){}</script>
 <div id="shell"></div>
 
 <main class="sheet-main">
@@ -225,8 +248,8 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="refraction.js?v=lg4"></script>
-<script src="core.js?v=lg4"></script>
+<script src="refraction.js?v=lg5"></script>
+<script src="core.js?v=lg5"></script>
 <script src="dashboard.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>

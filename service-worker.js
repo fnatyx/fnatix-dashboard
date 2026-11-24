@@ -1,9 +1,9 @@
-/* FNATIX ID: service worker. Network-first, cache fnatix-fincro-v9. */
-const CACHE = "fnatix-fincro-v9";
+/* FNATIX ID: service worker. Network-first, cache fnatix-fincro-v10. */
+const CACHE = "fnatix-fincro-v10";
 const ASSETS = [
   "./", "index.html", "pesanan.html", "customers.html", "laporan.html",
   "freelance.html", "produk-digital.html", "aset.html", "settings.html", "sistem-fnatix.html",
-  "style.css?v=lg4", "refraction.js?v=lg4", "core.js?v=lg4", "dashboard.js", "pesanan.js", "customers.js",
+  "style.css?v=lg5", "refraction.js?v=lg5", "core.js?v=lg5", "dashboard.js", "pesanan.js", "customers.js",
   "laporan.js", "freelance.js", "produk-digital.js", "aset.js", "settings.js",
   "supabase-config.js", "auth-gate.js",
   "fonts/pjs-var-latin.woff2", "fonts/pjs-var-latin-ext.woff2",
