@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fnatix ID · Pesanan</title>
+<title>FNATIX ID · Pesanan Jasa Edit</title>
 <link rel="icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101016">
-<link rel="stylesheet" href="style.css">
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+<meta name="theme-color" content="#090A09">
+<link rel="stylesheet" href="style.css?v=lg2">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
-<body class="locked" data-page="pesanan">
+<body class="locked is-data-loading" data-page="pesanan">
 <script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
-<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+<div class="auth-gate" role="dialog" aria-modal="true" aria-label="Masuk ke FNATIX ID">
   <form class="auth-card" id="authGateForm">
-    <img src="logo.png" alt="Logo Fnatix ID">
-    <h1>Fnatix ID</h1>
-    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <img width="60" height="60" src="logo.png" alt="Logo FNATIX ID">
+    <h1>FNATIX ID</h1>
+    <p>Kelola pesanan, kas, dan laporan FNATIX ID. Masukkan password untuk melanjutkan.</p>
     <div class="field">
       <label for="authGatePassword">Password</label>
-      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Masukkan password">
     </div>
     <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
     <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
@@ -30,24 +30,60 @@
 
 <main class="sheet-main">
   <div class="page-head">
-    <div><h1>Pesanan</h1><p class="sub" id="orderCount">Memuat pesanan</p></div>
-  </div>
-  <div class="state-error" id="ordError"></div>
-
-  <section class="card" style="margin-top:18px">
-    <div class="toolbar">
-      <label class="search-inline"><i data-lucide="search" class="icon"></i><input type="text" id="orderSearch" placeholder="Cari nama, layanan, atau nomor WhatsApp" aria-label="Cari pesanan"></label>
+    <div class="page-head-main">
+      <div class="page-title-row">
+        <h1>Pesanan Jasa Edit</h1>
+        <span class="page-pill lime"><span class="legend-dot" style="background:var(--accent)"></span><span id="orderCount">Memuat pesanan</span></span>
+      </div>
+      <p class="sub">Catatan order masuk, status selesai, dan kirim bukti ke customer.</p>
+    </div>
+    <div class="head-actions">
       <button type="button" class="btn btn-secondary" id="manageCategoryButton">Kelola Kategori</button>
-      <button type="button" class="btn btn-primary" id="addOrderBtn">Tambah Pesanan</button>
+      <button type="button" class="btn btn-primary" id="addOrderBtn"><i data-lucide="plus" aria-hidden="true" class="icon"></i>Tambah Pesanan</button>
+    </div>
+  </div>
+
+  <div class="data-loading-banner" role="status" aria-live="polite">
+    <span>Memuat daftar pesanan...</span>
+  </div>
+  <div class="state-error" id="ordError" role="alert"></div>
+
+  <section class="summary-band-3" aria-label="Ringkasan pesanan tampil">
+    <div class="summary-tile">
+      <div class="st-lbl">Pesanan Tampil</div>
+      <div class="st-val num sk-val" id="ordSummaryCount">0</div>
+      <div class="st-note">Sesuai filter dan pencarian aktif</div>
+    </div>
+    <div class="summary-tile">
+      <div class="st-lbl">Nominal Jasa Edit Tampil</div>
+      <div class="st-val num sk-val" id="ordSummaryTotal">Rp0</div>
+      <div class="st-note">Total nilai transaksi yang cocok</div>
+    </div>
+    <div class="summary-tile">
+      <div class="st-lbl">Rata-rata Nilai</div>
+      <div class="st-val num sk-val" id="ordSummaryAvg">Rp0</div>
+      <div class="st-note">Nilai rata-rata per pesanan</div>
+    </div>
+  </section>
+
+  <section class="card" aria-label="Daftar semua pesanan">
+    <div class="toolbar">
+      <label class="search-inline">
+        <i data-lucide="search" aria-hidden="true" class="icon"></i>
+        <input type="text" id="orderSearch" placeholder="Cari nama customer, layanan, atau nomor WhatsApp" aria-label="Cari pesanan">
+      </label>
+      <select class="control" id="orderCategoryFilter" style="width:auto; min-width:170px" aria-label="Filter layanan">
+        <option value="">Semua Layanan</option>
+      </select>
     </div>
     <div class="table-scroll" id="ordersTableWrap">
       <table class="kas-table stacked">
-        <thead><tr><th>Tanggal</th><th>Customer</th><th>Layanan</th><th>Status</th><th class="r">Jumlah</th><th></th></tr></thead>
+        <thead><tr><th>Tanggal</th><th>Customer</th><th>Layanan</th><th>Status</th><th class="r">Jumlah</th><th aria-label="Aksi"></th></tr></thead>
         <tbody id="transactionTableBody"></tbody>
       </table>
     </div>
     <div class="empty hidden" id="ordersEmpty">
-      <p>Belum ada pesanan pada pencarian ini.</p>
+      <p>Belum ada pesanan yang cocok dengan pencarian atau filter ini.</p>
       <button type="button" class="btn btn-primary" id="emptyAddBtn">Tambah Pesanan</button>
     </div>
     <div class="load-more-row hidden" id="loadMoreRow">
@@ -61,7 +97,9 @@
 <script src="auth-gate.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="core.js"></script>
+<script src="refraction.js?v=lg2"></script>
+<script src="core.js?v=lg2"></script>
 <script src="pesanan.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>
 </html>

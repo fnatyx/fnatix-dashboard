@@ -1,4 +1,4 @@
-/* Aset & Pricelist — galeri aset, CRUD, pricelist, ekspor teks/gambar */
+/* Aset & Pricelist: galeri aset, CRUD, pricelist, ekspor teks/gambar. */
 (function(){
 "use strict";
 const F=window.F, $=F.$, $$=F.$$;
@@ -44,10 +44,10 @@ function renderAssets(){
         ${a.note? `<span class="note">${F.esc(a.note)}</span>`:""}
       </div>
       <div class="acts">
-        <button type="button" class="icon-btn" data-asset-preview="${a.id}" aria-label="Pratinjau ${F.esc(a.title)}">${F.icon("eye")}</button>
-        <button type="button" class="icon-btn" data-asset-edit="${a.id}" aria-label="Edit ${F.esc(a.title)}">${F.icon("pencil")}</button>
-        <button type="button" class="icon-btn" data-action="use-logo" data-asset-logo="${a.id}" aria-label="Pakai ${F.esc(a.title)} sebagai logo bisnis">${F.icon("badge-check")}</button>
-        <button type="button" class="icon-btn" data-asset-del="${a.id}" aria-label="Hapus ${F.esc(a.title)}">${F.icon("trash-2")}</button>
+        <button type="button" class="icon-btn" data-asset-preview="${a.id}" aria-label="Pratinjau ${F.esc(a.title)}">${F.icon("eye","icon-sm")}</button>
+        <button type="button" class="icon-btn" data-asset-edit="${a.id}" aria-label="Edit ${F.esc(a.title)}">${F.icon("pencil","icon-sm")}</button>
+        <button type="button" class="icon-btn" data-action="use-logo" data-asset-logo="${a.id}" aria-label="Pakai ${F.esc(a.title)} sebagai logo bisnis">${F.icon("badge-check","icon-sm")}</button>
+        <button type="button" class="icon-btn danger" data-asset-del="${a.id}" aria-label="Hapus ${F.esc(a.title)}">${F.icon("trash-2","icon-sm")}</button>
       </div>
     </article>`).join("");
   $$("[data-asset-preview]",box).forEach(b=> b.addEventListener("click", ()=> previewAsset(b.dataset.assetPreview)));
@@ -116,6 +116,7 @@ function openAssetModal(asset){
     catch(e){ F.showToast("Gambar tidak bisa dibaca", "error"); }
   };
   dz.addEventListener("click", ()=> fileInput.click());
+  dz.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); fileInput.click(); } });
   fileInput.addEventListener("change", ()=> setFile(fileInput.files[0]));
   dz.addEventListener("dragover", e=>{ e.preventDefault(); dz.classList.add("drag"); });
   dz.addEventListener("dragleave", ()=> dz.classList.remove("drag"));
@@ -135,7 +136,6 @@ function openAssetModal(asset){
   });
 }
 
-/* Pricelist */
 function groupedPrices(){
   const items=F.getPricelist().filter(p=> !priceQuery || String(p.name||"").toLowerCase().includes(priceQuery));
   const cats=F.getCategories();
@@ -155,16 +155,17 @@ function renderPrices(){
   const groups=groupedPrices();
   const total=F.getPricelist().length;
   $("#priceEmpty").classList.toggle("hidden", total>0);
+  $("#priceExportCard").classList.toggle("hidden", total===0);
   $("#priceList").innerHTML=groups.map(g=> `
     <div class="group-label">${F.esc(g.category)}</div>
-    <div class="ledger" style="border-top:none">
+    <div class="ledger">
       ${g.items.map(p=> `
       <div class="lrow" style="padding-left:0; padding-right:0">
         <div class="grow"><div class="title">${F.esc(p.name)}</div>${p.note? `<div class="sub">${F.esc(p.note)}</div>`:""}</div>
-        <span class="amount">${F.esc(F.formatCurrencyValue(p.price))}</span>
+        <span class="amount num">${F.esc(F.formatCurrencyValue(p.price))}</span>
         <div class="row-actions">
-          <button type="button" class="icon-btn" data-price-edit="${p.id}" aria-label="Edit harga ${F.esc(p.name)}">${F.icon("pencil")}</button>
-          <button type="button" class="icon-btn" data-price-del="${p.id}" aria-label="Hapus harga ${F.esc(p.name)}">${F.icon("trash-2")}</button>
+          <button type="button" class="icon-btn" data-price-edit="${p.id}" aria-label="Edit harga ${F.esc(p.name)}">${F.icon("pencil","icon-sm")}</button>
+          <button type="button" class="icon-btn danger" data-price-del="${p.id}" aria-label="Hapus harga ${F.esc(p.name)}">${F.icon("trash-2","icon-sm")}</button>
         </div>
       </div>`).join("")}
     </div>`).join("");
@@ -210,7 +211,7 @@ function openPriceModal(item){
 }
 function buildPricelistText(){
   const p=F.getBusinessProfile();
-  const lines=["Pricelist "+(p.businessName||"Fnatix ID"), ""];
+  const lines=["Pricelist "+String(p.businessName||"FNATIX ID").toUpperCase(), ""];
   groupedPrices().forEach(g=>{
     lines.push(g.category);
     g.items.forEach(it=> lines.push("- "+it.name+": "+F.formatCurrencyValue(it.price)+(it.note? " ("+it.note+")":"")));
@@ -223,6 +224,7 @@ function buildPricelistText(){
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
+    document.body.classList.remove("is-data-loading");
     renderAssets(); renderPrices();
     window.__refreshPage=()=>{ renderAssets(); renderPrices(); };
     $$("#assetFilter [data-filter]").forEach(b=> b.addEventListener("click", ()=>{
@@ -240,13 +242,15 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     $("#downloadPriceBtn").addEventListener("click", async ()=>{
       try{
         if(!window.html2canvas) throw new Error("lib");
-        const canvas=await window.html2canvas($("#priceExportCard"), { backgroundColor:"#ffffff", scale:2 });
+        const bg=(getComputedStyle(document.documentElement).getPropertyValue("--surface")||"#FCFBF8").trim();
+        const canvas=await window.html2canvas($("#priceExportCard"), { backgroundColor:bg, scale:2 });
         const a=document.createElement("a"); a.href=canvas.toDataURL("image/png"); a.download="pricelist-fnatix-id.png"; a.click();
         F.showToast("Gambar pricelist diunduh");
       }catch(e){ F.showToast("Unduh gambar belum bisa dijalankan, library belum termuat", "error"); }
     });
   }catch(e){
-    const err=$("#assetError"); if(err){ err.style.display="block"; err.textContent="Data aset belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
+    document.body.classList.remove("is-data-loading");
+    const err=$("#assetError"); if(err){ err.classList.add("show"); err.textContent="Data aset belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
   }
 });
 })();

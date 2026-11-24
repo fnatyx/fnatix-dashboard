@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fnatix ID · Produk Digital</title>
+<title>FNATIX ID · Penjualan Produk Digital</title>
 <link rel="icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101016">
-<link rel="stylesheet" href="style.css">
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+<meta name="theme-color" content="#090A09">
+<link rel="stylesheet" href="style.css?v=lg2">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
-<body class="locked" data-page="produk">
+<body class="locked is-data-loading" data-page="produk">
 <script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
-<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+<div class="auth-gate" role="dialog" aria-modal="true" aria-label="Masuk ke FNATIX ID">
   <form class="auth-card" id="authGateForm">
-    <img src="logo.png" alt="Logo Fnatix ID">
-    <h1>Fnatix ID</h1>
-    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <img width="60" height="60" src="logo.png" alt="Logo FNATIX ID">
+    <h1>FNATIX ID</h1>
+    <p>Kelola pesanan, kas, dan laporan FNATIX ID. Masukkan password untuk melanjutkan.</p>
     <div class="field">
       <label for="authGatePassword">Password</label>
-      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Masukkan password">
     </div>
     <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
     <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
@@ -30,28 +30,50 @@
 
 <main class="sheet-main">
   <div class="page-head">
-    <div><h1>Produk Digital</h1><p class="sub">Buku penjualan toko digital, terpisah dari kas jasa edit dan freelance</p></div>
-    <button type="button" class="btn btn-primary" id="addProdukBtn">Tambah Penjualan</button>
+    <div class="page-head-main">
+      <div class="page-title-row">
+        <h1>Produk Digital</h1>
+        <span class="page-pill emerald"><span class="legend-dot" style="background:var(--pd)"></span><span>Buku Terpisah</span></span>
+      </div>
+      <p class="sub">Katalog dan riwayat penjualan produk digital per kanal.</p>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="btn btn-pd" id="addProdukBtn"><i data-lucide="plus" aria-hidden="true" class="icon"></i>Tambah Penjualan</button>
+    </div>
   </div>
-  <div class="state-error" id="pdError"></div>
 
-  <section class="stat-grid" aria-label="Ringkasan per produk" id="pdProductGrid"></section>
+  <div class="data-loading-banner" role="status" aria-live="polite">
+    <span>Memuat buku penjualan produk digital...</span>
+  </div>
+  <div class="state-error" id="pdError" role="alert"></div>
 
-  <section class="block">
-    <div class="block-head"><h2>Total Penjualan Produk Digital</h2></div>
-    <div class="kv"><span class="k">Total semua produk</span><span class="v num" id="pdGrandTotal">-</span></div>
-    <div class="kv"><span class="k">Total unit terjual</span><span class="v num" id="pdGrandQty">-</span></div>
-    <p class="small muted" style="margin:10px 0 0">Angka di halaman ini hanya milik buku toko digital. Tidak ditambahkan ke Dashboard, kas jasa edit, atau freelance.</p>
+  <section class="pd-summary-strip" aria-label="Total penjualan produk digital">
+    <div>
+      <div class="pd-sum-label">Total Penjualan Produk Digital</div>
+      <div class="pd-sum-val num sk-val" id="pdGrandTotal">Rp0</div>
+    </div>
+    <div>
+      <div class="pd-sum-label">Total Unit Terjual</div>
+      <div class="pd-sum-val num sk-val" id="pdGrandQty">0 unit</div>
+    </div>
+    <p class="small muted" style="margin:0; max-width:46ch">Angka di halaman ini milik buku Penjualan Produk Digital saja. Pemasukan ini tidak pernah digabung ke buku Pendapatan Jasa Edit (FNATIX ID maupun Freelance).</p>
   </section>
 
-  <section class="block">
-    <div class="block-head"><h2>Daftar Penjualan</h2></div>
-    <div class="toolbar" style="margin-top:6px">
-      <label class="search-inline"><i data-lucide="search" class="icon"></i><input type="text" id="pdSearch" placeholder="Cari produk, kanal, atau catatan" aria-label="Cari penjualan produk digital"></label>
-      <select id="pdProductFilter" class="control" style="width:auto" aria-label="Filter produk"></select>
+  <section class="pd-catalog-grid" aria-label="Ringkasan per produk" id="pdProductGrid"></section>
+
+  <section class="card" aria-label="Daftar penjualan produk digital">
+    <div class="card-head"><h2>Daftar Penjualan</h2></div>
+    <div class="toolbar">
+      <label class="search-inline">
+        <i data-lucide="search" aria-hidden="true" class="icon"></i>
+        <input type="text" id="pdSearch" placeholder="Cari produk, kanal, atau catatan" aria-label="Cari penjualan produk digital">
+      </label>
+      <select id="pdProductFilter" class="control" style="width:auto; min-width:180px" aria-label="Filter produk"></select>
     </div>
     <div id="pdList"></div>
-    <div class="empty hidden" id="pdEmpty"><p>Belum ada penjualan produk digital pada filter ini.</p></div>
+    <div class="empty hidden" id="pdEmpty">
+      <p>Belum ada penjualan produk digital pada filter ini.</p>
+    </div>
   </section>
 </main>
 
@@ -59,7 +81,9 @@
 <script src="supabase-config.js"></script>
 <script src="auth-gate.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
-<script src="core.js"></script>
+<script src="refraction.js?v=lg2"></script>
+<script src="core.js?v=lg2"></script>
 <script src="produk-digital.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>
 </html>

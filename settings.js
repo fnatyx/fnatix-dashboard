@@ -1,12 +1,13 @@
-/* Pengaturan — profil bisnis: logo, nama, kontak, mata uang, format tanggal */
+/* Pengaturan: profil bisnis: logo, nama, kontak, mata uang, format tanggal. */
 (function(){
 "use strict";
 const F=window.F, $=F.$;
-let tempLogo=null; // null = tidak berubah, "" = dihapus, string = logo baru
+let tempLogo=null;
 
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
+    document.body.classList.remove("is-data-loading");
     const p=F.getBusinessProfile();
     $("#settingsBusinessName").value=p.businessName||"";
     $("#settingsContactPhone").value=p.contactPhone||"";
@@ -32,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       e.preventDefault();
       const cur=F.getBusinessProfile();
       const next={
-        businessName:$("#settingsBusinessName").value.trim()||cur.businessName||"Fnatix ID",
+        businessName:String($("#settingsBusinessName").value.trim()||cur.businessName||"FNATIX ID").toUpperCase(),
         contactPhone:$("#settingsContactPhone").value.trim(),
         contactEmail:$("#settingsContactEmail").value.trim(),
         logo: tempLogo===null? (cur.logo||"") : tempLogo,
@@ -42,13 +43,13 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       F.setData("fnatixBusinessProfile", next);
       F.logActivity("Memperbarui pengaturan bisnis", "settings", "settings");
       if(F.applyBusinessBranding) F.applyBusinessBranding();
-      if(window.__syncNotifBadge) window.__syncNotifBadge();
       const hint=$("#settingsSavedHint"); hint.style.display="block";
       F.showToast("Pengaturan tersimpan");
       setTimeout(()=>{ hint.style.display="none"; }, 5000);
     });
   }catch(e){
-    const err=$("#setError"); if(err){ err.style.display="block"; err.textContent="Pengaturan belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
+    document.body.classList.remove("is-data-loading");
+    const err=$("#setError"); if(err){ err.classList.add("show"); err.textContent="Pengaturan belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
   }
 });
 })();

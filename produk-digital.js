@@ -4,7 +4,7 @@
 const F=window.F, $=F.$, $$=F.$$;
 const PRODUCTS=F.PRODUK_DIGITAL_PRODUCTS;
 const CHANNELS=["Lynk","PayPal","QRIS","WhatsApp","Lainnya"];
-const ICONS={ relight:"sun", graduation:"graduation-cap", wedding:"heart", bundle:"package", poplab:"sparkles" };
+const ICONS={ relight:"sun", graduation:"graduation-cap", wedding:"heart", bundle:"package", poplab:"layers" };
 
 function productOf(id){ return PRODUCTS.find(p=> p.id===id) || { id:id, label:id||"-", price:0 }; }
 function totals(){
@@ -24,15 +24,22 @@ function renderSummary(){
   const t=totals();
   $("#pdProductGrid").innerHTML=PRODUCTS.map(p=>{
     const v=t.per[p.id];
-    return '<div class="stat-card">'+
-      '<div class="stat-top"><span class="stat-ic lav">'+F.icon(ICONS[p.id]||"package")+'</span></div>'+
-      '<div class="stat-value num">'+F.esc(F.formatCurrencyValue(v.amount))+'</div>'+
-      '<div class="stat-label">'+F.esc(p.label)+' , harga '+F.esc(F.formatCurrencyValue(p.price))+'</div>'+
-      '<div class="stat-note">'+v.qty+' unit terjual</div>'+
-    '</div>';
+    const pct=t.amount>0? Math.round(v.amount/t.amount*100) : 0;
+    return '<article class="pd-item-card">'+
+      '<div class="pd-item-head">'+
+        '<span class="pd-item-ic">'+F.icon(ICONS[p.id]||"package","icon-sm")+'</span>'+
+        '<span class="tag tag-azure num">'+v.qty+' unit</span>'+
+      '</div>'+
+      '<div>'+
+        '<div class="pd-item-name">'+F.esc(p.label)+'</div>'+
+        '<div class="pd-item-price num">Harga katalog '+F.esc(F.formatCurrencyValue(p.price))+'</div>'+
+      '</div>'+
+      '<div class="pd-item-rev num">'+F.esc(F.formatCurrencyValue(v.amount))+'</div>'+
+      '<div class="pd-item-bar" aria-hidden="true"><span style="width:'+pct+'%"></span></div>'+
+    '</article>';
   }).join("");
-  $("#pdGrandTotal").textContent=F.formatCurrencyValue(t.amount);
-  $("#pdGrandQty").textContent=t.qty+" unit";
+  const gt=$("#pdGrandTotal"); if(gt){ gt.textContent=F.formatCurrencyValue(t.amount); gt.classList.remove("sk-val"); }
+  const gq=$("#pdGrandQty"); if(gq){ gq.textContent=t.qty+" unit"; gq.classList.remove("sk-val"); }
   F.refreshIcons();
 }
 
@@ -49,8 +56,8 @@ function renderList(){
     const p=productOf(e.product);
     return '<div class="lrow">'+
       '<div class="grow"><div class="title">'+F.esc(p.label)+'</div>'+
-      '<div class="sub">'+F.esc(F.formatDateValue(e.date))+(e.channel? ' , '+F.esc(e.channel) : '')+(e.note? ' , '+F.esc(e.note) : '')+'</div></div>'+
-      '<span class="tag tag-azure">'+(Number(e.qty)||0)+' unit</span>'+
+      '<div class="sub">'+F.esc(F.formatDateValue(e.date))+(e.channel? ', '+F.esc(e.channel) : '')+(e.note? ', '+F.esc(e.note) : '')+'</div></div>'+
+      '<span class="tag tag-azure num">'+(Number(e.qty)||0)+' unit</span>'+
       '<span class="amount num">'+F.esc(F.formatCurrencyValue(e.amount))+'</span>'+
       '<span class="row-actions">'+
         '<button type="button" class="icon-btn" data-pd-edit="'+F.esc(e.id)+'" aria-label="Edit penjualan '+F.esc(p.label)+'">'+F.icon("pencil","icon-sm")+'</button>'+
@@ -77,7 +84,7 @@ function openProdukModal(entry){
     F.modalHead(isEdit? "Edit Penjualan" : "Tambah Penjualan", "Tercatat hanya di buku produk digital.")+
     '<form id="pdForm">'+
       '<div class="field"><label for="pdProduct">Produk</label><select class="control" id="pdProduct">'+
-        PRODUCTS.map(p=> '<option value="'+p.id+'"'+(p.id===cur.product?" selected":"")+'>'+F.esc(p.label)+' , '+F.esc(F.formatCurrencyValue(p.price))+'</option>').join("")+'</select></div>'+
+        PRODUCTS.map(p=> '<option value="'+p.id+'"'+(p.id===cur.product?" selected":"")+'>'+F.esc(p.label)+', '+F.esc(F.formatCurrencyValue(p.price))+'</option>').join("")+'</select></div>'+
       '<div class="grid-2">'+
         '<div class="field"><label for="pdQty">Jumlah Unit</label><input class="control num" type="number" id="pdQty" min="1" max="1000" value="'+F.esc(cur.qty||1)+'"></div>'+
         '<div class="field"><label for="pdAmount">Total Harga (Rp)</label><input class="control num" type="number" id="pdAmount" min="0" step="500" value="'+F.esc(cur.amount==null?"":cur.amount)+'"><p class="hint">Terisi otomatis dari harga produk kali jumlah. Ubah manual bila perlu, misalnya penjualan direct dalam dolar.</p></div>'+
@@ -90,7 +97,7 @@ function openProdukModal(entry){
       '<div class="field"><label for="pdNote">Catatan</label><input class="control" id="pdNote" value="'+F.esc(cur.note||"")+'" placeholder="Catatan penjualan" autocomplete="off"></div>'+
       '<p class="error-text" id="pdFormError"></p>'+
       '<div class="modal-actions"><button type="button" class="btn btn-secondary" data-close-modal>Batal</button>'+
-      '<button type="submit" class="btn btn-primary">'+(isEdit? "Simpan Perubahan" : "Tambah Penjualan")+'</button></div>'+
+      '<button type="submit" class="btn btn-pd">'+(isEdit? "Simpan Perubahan" : "Tambah Penjualan")+'</button></div>'+
     '</form>');
   const syncAmount=()=>{
     const p=productOf($("#pdProduct", ov).value);
@@ -131,6 +138,7 @@ function renderAll(){ renderSummary(); renderList(); }
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
+    document.body.classList.remove("is-data-loading");
     $("#pdProductFilter").innerHTML='<option value="">Semua Produk</option>'+PRODUCTS.map(p=> '<option value="'+p.id+'">'+F.esc(p.label)+'</option>').join("");
     renderAll();
     window.__refreshPage=renderAll;
@@ -138,7 +146,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     $("#pdSearch").addEventListener("input", renderList);
     $("#pdProductFilter").addEventListener("change", renderList);
   }catch(e){
-    const err=$("#pdError"); if(err){ err.style.display="block"; err.textContent="Data produk digital belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
+    document.body.classList.remove("is-data-loading");
+    const err=$("#pdError"); if(err){ err.classList.add("show"); err.textContent="Data produk digital belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
   }
 });
 })();

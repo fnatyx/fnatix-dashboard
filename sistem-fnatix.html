@@ -1,116 +1,97 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fnatix ID · Sistem FNATIX ID</title>
+<title>FNATIX ID · Sistem FNATIX ID</title>
 <link rel="icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101016">
-<link rel="stylesheet" href="style.css">
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+<meta name="theme-color" content="#090A09">
+<link rel="stylesheet" href="style.css?v=lg2">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
 <body data-page="sistem">
-<div class="app">
-  <aside class="rail">
-    <a class="rail-brand" href="index.html" aria-label="FNATIX ID"><img class="brand-logo" src="logo-glyph.png" alt="Logo Fnatix ID"></a>
-    <nav class="rail-nav" aria-label="Navigasi halaman">
-      <a class="rail-link" href="index.html" title="Dashboard" aria-label="Dashboard"><i data-lucide="layout-dashboard" class="icon"></i></a>
-      <a class="rail-link" href="pesanan.html" title="Pesanan" aria-label="Pesanan"><i data-lucide="receipt-text" class="icon"></i></a>
-      <a class="rail-link" href="customers.html" title="Customers" aria-label="Customers"><i data-lucide="users" class="icon"></i></a>
-      <a class="rail-link" href="laporan.html" title="Laporan" aria-label="Laporan"><i data-lucide="chart-no-axes-combined" class="icon"></i></a>
-      <a class="rail-link" href="freelance.html" title="Freelance" aria-label="Freelance"><i data-lucide="briefcase-business" class="icon"></i></a>
-      <a class="rail-link" href="aset.html" title="Aset &amp; Pricelist" aria-label="Aset &amp; Pricelist"><i data-lucide="folder-open" class="icon"></i></a>
-      <a class="rail-link" href="settings.html" title="Pengaturan" aria-label="Pengaturan"><i data-lucide="settings" class="icon"></i></a>
-      <a class="rail-link active" href="sistem-fnatix.html" title="Sistem" aria-label="Sistem" aria-current="page"><i data-lucide="waypoints" class="icon"></i></a>
-    </nav>
-  </aside>
-  <div class="dock">
-    <div class="dock-item"><button type="button" class="icon-btn" id="sysTheme" aria-label="Ganti tema"></button></div>
-  </div>
-  <header class="topbar">
-    <a class="top-brand" href="index.html"><img class="brand-logo" src="logo-glyph.png" alt="Logo Fnatix ID"><span class="brand-name">FNATIX ID</span><span class="top-date" id="sysDate"></span></a>
-  </header>
+<div id="shell"></div>
 
-  <div class="content">
-  <main class="sheet-main">
-    <div class="page-head">
-      <div>
-        <h1>Sistem FNATIX ID</h1>
-        <p class="sub">Peta cara seluruh sistem bekerja: lead dari Threads, order dari WhatsApp, pencatatan di dashboard web, dan laporan kembali ke owner.</p>
+<main class="sheet-main">
+  <div class="page-head">
+    <div class="page-head-main">
+      <div class="page-title-row">
+        <h1>Alur Sistem</h1>
+        <span class="page-pill">FNATIX ID</span>
       </div>
+      <p class="sub">Peta alur kerja mulai dari lead Threads hingga laporan kas.</p>
+    </div>
+    <div class="head-actions">
       <a class="btn btn-secondary no-print" href="index.html">Kembali ke Dashboard</a>
     </div>
-
-    <section class="block">
-      <div class="block-head"><h2>Alur Order</h2></div>
-      <div class="flow">
-        <div class="flow-step"><span class="f-num">1</span><span class="f-body"><span class="f-title">Customer</span><div class="f-sub">Order masuk lewat WhatsApp</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">2</span><span class="f-body"><span class="f-title">PHARITA</span><div class="f-sub">Bot Telegram, mencatat order dengan perintah /catat</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">3</span><span class="f-body"><span class="f-title">Dashboard Web</span><div class="f-sub">Tersimpan di Supabase app_data, sumber data tunggal</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">4</span><span class="f-body"><span class="f-title">Owner</span><div class="f-sub">Saldo dan rekap selalu sinkron dengan dashboard</div></span></div>
-      </div>
-    </section>
-
-    <section class="block">
-      <div class="block-head"><h2>Alur Lead Threads</h2></div>
-      <div class="flow">
-        <div class="flow-step"><span class="f-num">1</span><span class="f-body"><span class="f-title">JISOO</span><div class="f-sub">Mencari lead jasa edit foto di Threads</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">2</span><span class="f-body"><span class="f-title">AHYEON</span><div class="f-sub">Membuat draf balasan yang spesifik untuk tiap lead</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">3</span><span class="f-body"><span class="f-title">Owner</span><div class="f-sub">Meninjau draf dan memberi perintah /gas</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">4</span><span class="f-body"><span class="f-title">RUKA</span><div class="f-sub">Memposting balasan yang sudah disetujui</div></span><span class="f-arrow">→</span></div>
-        <div class="flow-step"><span class="f-num">5</span><span class="f-body"><span class="f-title">Threads</span><div class="f-sub">Balasan terbit sebagai akun @fnatix.id</div></span></div>
-      </div>
-      <p class="small muted" style="margin-top:10px">Tidak ada posting tanpa persetujuan owner. Tim bot lengkap: JISOO, AHYEON, RUKA, PHARITA, dan ROSE untuk toko digital.</p>
-    </section>
-
-    <section class="block">
-      <div class="block-head"><h2>Kanal Publik</h2></div>
-      <div>
-        <div class="channel-row"><span>Instagram @fnatix.id</span><span>Threads @fnatix.id</span><span>Facebook Pro</span><span>YouTube FNATIX ID</span></div>
-      </div>
-      <p class="small muted" style="margin-top:10px">Portofolio dan promosi jasa edit foto berjalan di empat kanal itu dengan akun Fnatix ID. Halaman ini berdiri sendiri tanpa database dan tetap bisa dibuka offline.</p>
-    </section>
-  </main>
-
-  <footer class="sheet-foot">
-    <span>Fnatix ID · Dasbor Kas</span>
-    <span>Data Fnatix ID dan Freelance selalu terpisah.</span>
-  </footer>
   </div>
 
-  <nav class="bottombar" aria-label="Navigasi halaman">
-    <a class="bb-link" href="index.html" title="Dashboard" aria-label="Dashboard"><i data-lucide="layout-dashboard" class="icon"></i></a>
-    <a class="bb-link" href="pesanan.html" title="Pesanan" aria-label="Pesanan"><i data-lucide="receipt-text" class="icon"></i></a>
-    <a class="bb-link" href="customers.html" title="Customers" aria-label="Customers"><i data-lucide="users" class="icon"></i></a>
-    <a class="bb-link" href="laporan.html" title="Laporan" aria-label="Laporan"><i data-lucide="chart-no-axes-combined" class="icon"></i></a>
-    <a class="bb-link" href="freelance.html" title="Freelance" aria-label="Freelance"><i data-lucide="briefcase-business" class="icon"></i></a>
-    <a class="bb-link" href="aset.html" title="Aset &amp; Pricelist" aria-label="Aset &amp; Pricelist"><i data-lucide="folder-open" class="icon"></i></a>
-    <a class="bb-link" href="settings.html" title="Pengaturan" aria-label="Pengaturan"><i data-lucide="settings" class="icon"></i></a>
-    <a class="bb-link active" href="sistem-fnatix.html" title="Sistem" aria-label="Sistem" aria-current="page"><i data-lucide="waypoints" class="icon"></i></a>
-  </nav>
-</div>
+  <section class="card" aria-label="Alur Order">
+    <div class="card-head"><h2>Alur Order Jasa Edit</h2></div>
+    <div class="flow">
+      <div class="flow-step">
+        <span class="f-num">1</span>
+        <span class="f-body"><span class="f-title">Customer</span><div class="f-sub">Order masuk lewat WhatsApp</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">2</span>
+        <span class="f-body"><span class="f-title">PHARITA</span><div class="f-sub">Bot Telegram, mencatat order dengan perintah /catat</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">3</span>
+        <span class="f-body"><span class="f-title">Dashboard Web</span><div class="f-sub">Tersimpan di Supabase app_data, sumber data tunggal</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">4</span>
+        <span class="f-body"><span class="f-title">Owner</span><div class="f-sub">Saldo dan rekap selalu sinkron dengan dashboard</div></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" aria-label="Alur Lead Threads">
+    <div class="block-head"><h2>Alur Lead Threads</h2></div>
+    <div class="flow">
+      <div class="flow-step">
+        <span class="f-num">1</span>
+        <span class="f-body"><span class="f-title">JISOO</span><div class="f-sub">Mencari lead jasa edit foto di Threads</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">2</span>
+        <span class="f-body"><span class="f-title">AHYEON</span><div class="f-sub">Membuat draf balasan yang spesifik untuk tiap lead</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">3</span>
+        <span class="f-body"><span class="f-title">Owner</span><div class="f-sub">Meninjau draf dan memberi perintah /gas</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">4</span>
+        <span class="f-body"><span class="f-title">RUKA</span><div class="f-sub">Memposting balasan yang sudah disetujui</div></span>
+      </div>
+      <div class="flow-step">
+        <span class="f-num">5</span>
+        <span class="f-body"><span class="f-title">Threads</span><div class="f-sub">Balasan terbit sebagai akun @fnatix.id</div></span>
+      </div>
+    </div>
+    <p class="small muted" style="margin:12px 0 0">Tidak ada posting tanpa persetujuan owner. Tim bot lengkap: JISOO, AHYEON, RUKA, PHARITA, dan ROSE untuk toko produk digital.</p>
+  </section>
+
+  <section class="block" aria-label="Kanal Publik">
+    <div class="block-head"><h2>Kanal Publik</h2></div>
+    <div class="channel-row">
+      <span>Instagram @fnatix.id</span>
+      <span>Threads @fnatix.id</span>
+      <span>Facebook Pro</span>
+      <span>YouTube FNATIX ID</span>
+    </div>
+    <p class="small muted" style="margin:12px 0 0">Portofolio dan promosi jasa edit foto berjalan di empat kanal tersebut dengan akun FNATIX ID. Halaman ini berdiri sendiri tanpa koneksi database dan tetap bisa dibuka offline.</p>
+  </section>
+</main>
+
 <script src="https://unpkg.com/lucide@latest"></script>
-<script>if(window.lucide && lucide.createIcons){ lucide.createIcons(); }</script>
-<script>
-  (function(){
-    var d=new Date();
-    document.getElementById('sysDate').textContent=d.toLocaleDateString('id-ID',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    var btn=document.getElementById('sysTheme');
-    function draw(){
-      var dark=document.documentElement.getAttribute('data-theme')==='dark';
-      btn.textContent=dark? '☀' : '☾';
-      btn.style.fontSize='17px';
-    }
-    btn.addEventListener('click', function(){
-      var next=document.documentElement.getAttribute('data-theme')==='dark'? 'light':'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try{ localStorage.setItem('fnatixTheme', next); }catch(e){}
-      draw();
-    });
-    draw();
-  })();
-</script>
+<script src="refraction.js?v=lg2"></script>
+<script src="core.js?v=lg2"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>
 </html>

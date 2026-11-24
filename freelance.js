@@ -1,9 +1,9 @@
-/* Freelance — target, donat admin, pesanan, quick pricing, gajian */
+/* Freelance: target bulanan, donat admin, pesanan, quick pricing batch, dan rekap gajian. */
 (function(){
 "use strict";
 const F=window.F, $=F.$, $$=F.$$;
 const ADMIN_LIST=["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","SM"];
-const ADMIN_COLOR_PALETTE=["#F471B5","#7C3AED","#F9A8D4","#9333EA","#EC4899","#A78BFA","#DB2777","#6D28D9","#F0ABFC","#8B5CF6","#E879F9","#4C1D95","#F472B6","#C084FC","#BE185D","#5B21B6","#701A75","#D8B4FE"];
+const ADMIN_COLOR_PALETTE=["#D6FF3F","#34D399","#38BDF8","#A3E635","#10B981","#0EA5E9","#BEF264","#6EE7B7","#7DD3FC","#65A30D","#059669","#0284C7","#4D7C0F","#047857","#0369A1","#84CC16","#2DD4BF","#869083"];
 const FREELANCE_GROUP_VISIBLE_LIMIT=5;
 const BATCH_PRICING_STEP=5000, BATCH_PRICING_MIN=10000, BATCH_PRICING_MAX=100000;
 const FREELANCE_CUT_PERCENT=40, FREELANCE_CUT_PERCENT_BELOW_TARGET=50;
@@ -19,9 +19,6 @@ function getFreelanceCutInfo(monthKey){
   const target=F.getFreelanceTarget();
   const below=files<target;
   return { files, target, below, percent: below? FREELANCE_CUT_PERCENT_BELOW_TARGET : FREELANCE_CUT_PERCENT };
-}
-function getTotalFreelanceNetIncome(){
-  return F.getFreelanceIncome().reduce((s,e)=>{ const c=getFreelanceCutInfo(e.month); return s+Math.round((Number(e.gross)||0)*(100-c.percent)/100); },0);
 }
 function generateFreelanceFileCode(admin, offset, date){
   const mk=String(date||F.localDateKey()).slice(0,7);
@@ -49,24 +46,27 @@ function computeBatchPricingDistribution(total, count){
   return arr;
 }
 
-/* Render: target + grafik */
 function renderTarget(){
   const mk=F.localMonthKey();
-  const files=F.getFreelanceOrders().filter(o=> monthOf(o)===mk).length;
-  const target=F.getFreelanceTarget();
-  const pct=Math.min(100, Math.round(files/target*100));
+  const cut=getFreelanceCutInfo(mk);
+  const pct=Math.min(100, Math.round(cut.files/cut.target*100));
   $("#freelanceTargetLabel").textContent="Target "+F.monthLabel(mk);
-  $("#freelanceTargetText").textContent=files+" / "+target+" file";
+  $("#freelanceTargetText").textContent=cut.files+" / "+cut.target+" file";
   $("#freelanceTargetFill").style.width=pct+"%";
-  $("#freelanceTargetNote").textContent= files>=target? "Target bulan ini tercapai." : "Sisa "+(target-files)+" file lagi untuk mencapai target bulan ini.";
+  $("#freelanceTargetNote").textContent= cut.files>=cut.target? "Target bulan ini tercapai." : "Sisa "+(cut.target-cut.files)+" file lagi untuk mencapai target bulan ini.";
+  const badgeRow=$("#freelanceCutBadgeRow");
+  if(badgeRow){
+    badgeRow.innerHTML='<span class="tag '+(cut.below? "tag-amber" : "tag-green")+'">Potongan aktif bulan ini: '+cut.percent+"%</span>";
+  }
 }
+
 let flCcRaf=null;
 function animateFlCenterValue(total){
   const el=$("#flChartCenterVal"); if(!el) return;
   if(flCcRaf) cancelAnimationFrame(flCcRaf);
   const reduce=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if(reduce){ el.textContent=total; return; }
-  const t0=performance.now(), dur=900;
+  const t0=performance.now(), dur=600;
   const step=(t)=>{ const p=Math.min(1,(t-t0)/dur); const e=1-Math.pow(1-p,3); el.textContent=Math.round(total*e); if(p<1) flCcRaf=requestAnimationFrame(step); };
   flCcRaf=requestAnimationFrame(step);
 }
@@ -80,18 +80,18 @@ function renderChart(){
   const center=$("#flChartCenter");
   if(center){ center.classList.toggle("hidden", !total); if(total) animateFlCenterValue(total); }
   const entries=ADMIN_LIST.map((a,i)=> ({ admin:a, count:counts[i], color:ADMIN_COLOR_PALETTE[i] })).filter(e=> e.count>0).sort((x,y)=> y.count-x.count);
-  $("#freelanceLegend").innerHTML=`<span class="li"><strong>Total: ${total} pesanan</strong></span>`+
-    entries.map((e,idx)=> `<span class="li" style="animation-delay:${idx*45}ms"><span class="dot" style="background:${e.color}"></span>${e.admin}: ${e.count} <span class="val">(${total? Math.round(e.count/total*100):0}%)</span></span>`).join("");
+  $("#freelanceLegend").innerHTML=`<span><strong>Total: ${total} pesanan</strong></span>`+
+    entries.map(e=> `<span><span class="dot" style="background:${e.color}"></span>${e.admin}: ${e.count} <span class="val">(${total? Math.round(e.count/total*100):0}%)</span></span>`).join("");
   if(!total){ if(chart){ chart.destroy(); chart=null; } return; }
   if(!window.Chart) return;
-  const data={ labels:entries.map(e=> e.admin), datasets:[{ data:entries.map(e=> e.count), backgroundColor:entries.map(e=> e.color), borderWidth:0, spacing:3, borderRadius:7, hoverOffset:8 }] };
+  const surf=(getComputedStyle(document.documentElement).getPropertyValue("--surface")||"#FCFBF8").trim();
+  const data={ labels:entries.map(e=> e.admin), datasets:[{ data:entries.map(e=> e.count), backgroundColor:entries.map(e=> e.color), borderWidth:2, borderColor:surf, hoverOffset:6 }] };
   if(chart){ chart.data=data; chart.update(); return; }
   chart=new window.Chart(canvas.getContext("2d"), { type:"doughnut", data,
-    options:{ responsive:true, maintainAspectRatio:false, cutout:"72%", animation:{ duration:950, easing:"easeOutQuart", animateScale:true, animateRotate:true }, plugins:{ legend:{ display:false },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"70%", animation:{ duration:550, easing:"easeOutQuart" }, plugins:{ legend:{ display:false },
       tooltip:{ callbacks:{ label:(c)=> " "+c.label+": "+c.parsed+" pesanan ("+(total? Math.round(c.parsed/total*100):0)+"%)" } } } } });
 }
 
-/* Render: daftar pesanan */
 function currentFilters(){
   return { q:($("#freelanceSearch").value||"").trim().toLowerCase(),
            month:$("#freelanceMonthFilter").value||"",
@@ -110,17 +110,17 @@ function renderList(){
   box.innerHTML=Array.from(groups.entries()).map(([mk, items])=>{
     const expanded=expandedGroups.has(mk);
     const shown=expanded? items : items.slice(0, FREELANCE_GROUP_VISIBLE_LIMIT);
-    return `<div class="group-label">${F.esc(F.monthLabel(mk))} , ${items.length} file</div>
-    <div class="ledger" style="border-top:none">
+    return `<div class="group-label">${F.esc(F.monthLabel(mk))}, ${items.length} file</div>
+    <div class="ledger">
       ${shown.map(o=> `
       <div class="lrow">
-        <span class="dot" style="background:${adminColor(o.admin)}"></span>
+        <span class="pd-dot" style="background:${adminColor(o.admin)}"></span>
         <span class="tag tag-amber">${F.esc(o.admin)}</span>
-        <div class="grow"><div class="title">${F.esc(o.fileName)}</div><div class="sub">${F.esc(o.editType||"-")} , ${F.esc(F.formatDateValue(o.date))}</div></div>
-        <span class="amount">${o.price? F.esc(F.formatCurrencyValue(o.price)) : '<span class="muted" style="font-family:var(--font-ui); font-weight:500">Belum dihargai</span>'}</span>
+        <div class="grow"><div class="title">${F.esc(o.fileName)}</div><div class="sub">${F.esc(o.editType||"-")}, ${F.esc(F.formatDateValue(o.date))}</div></div>
+        <span class="amount num">${o.price? F.esc(F.formatCurrencyValue(o.price)) : '<span class="muted" style="font-weight:500">Belum dihargai</span>'}</span>
         <div class="row-actions">
-          <button type="button" class="icon-btn" data-fo-edit="${o.id}" aria-label="Edit pesanan ${F.esc(o.fileName)}">${F.icon("pencil")}</button>
-          <button type="button" class="icon-btn" data-fo-del="${o.id}" aria-label="Hapus pesanan ${F.esc(o.fileName)}">${F.icon("trash-2")}</button>
+          <button type="button" class="icon-btn" data-fo-edit="${o.id}" aria-label="Edit pesanan ${F.esc(o.fileName)}">${F.icon("pencil","icon-sm")}</button>
+          <button type="button" class="icon-btn danger" data-fo-del="${o.id}" aria-label="Hapus pesanan ${F.esc(o.fileName)}">${F.icon("trash-2","icon-sm")}</button>
         </div>
       </div>`).join("")}
     </div>
@@ -142,7 +142,6 @@ function renderList(){
   F.refreshIcons();
 }
 
-/* Modal pesanan freelance */
 function adminOptions(sel){ return ADMIN_LIST.map(a=> `<option value="${a}" ${a===sel?"selected":""}>Admin ${a}</option>`).join(""); }
 function openFreelanceModal(order){
   const isEdit=!!order;
@@ -190,7 +189,6 @@ function openFreelanceModal(order){
   });
 }
 
-/* Quick pricing */
 function batchFiles(){
   const mk=$("#batchMonth").value; const admin=$("#batchAdmin").value;
   if(!mk||!admin) return [];
@@ -219,7 +217,6 @@ function applyBatchPricing(){
   renderAll();
 }
 
-/* Pendapatan bulanan */
 function updateIncomePanels(){
   const mk=$("#incomeMonth").value||F.localMonthKey();
   const orders=F.getFreelanceOrders().filter(o=> monthOf(o)===mk);
@@ -255,10 +252,10 @@ function renderIncomeList(){
     return `
     <div class="lrow">
       <div class="grow"><div class="title">${F.esc(F.monthLabel(e.month))}</div><div class="sub">Gross ${F.esc(F.formatCurrencyValue(e.gross))}, potongan ${cut.percent}%</div></div>
-      <span class="amount" style="color:var(--amber)">${F.esc(F.formatCurrencyValue(net))}</span>
+      <span class="amount num" style="color:var(--fl-ink)">${F.esc(F.formatCurrencyValue(net))}</span>
       <div class="row-actions">
-        <button type="button" class="icon-btn" data-inc-edit="${e.id}" aria-label="Edit gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("pencil")}</button>
-        <button type="button" class="icon-btn" data-inc-del="${e.id}" aria-label="Hapus gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("trash-2")}</button>
+        <button type="button" class="icon-btn" data-inc-edit="${e.id}" aria-label="Edit gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("pencil","icon-sm")}</button>
+        <button type="button" class="icon-btn danger" data-inc-del="${e.id}" aria-label="Hapus gajian ${F.esc(F.monthLabel(e.month))}">${F.icon("trash-2","icon-sm")}</button>
       </div>
     </div>`;
   }).join("");
@@ -285,6 +282,7 @@ function renderAll(){ renderTarget(); renderChart(); renderList(); updateIncomeP
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
+    document.body.classList.remove("is-data-loading");
     const mk=F.localMonthKey();
     $("#freelanceMonthFilter").value="";
     $("#incomeMonth").value=mk;
@@ -354,7 +352,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
       renderIncomeList();
     });
   }catch(e){
-    const err=$("#flError"); if(err){ err.style.display="block"; err.textContent="Data freelance belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
+    document.body.classList.remove("is-data-loading");
+    const err=$("#flError"); if(err){ err.classList.add("show"); err.textContent="Data freelance belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
   }
 });
 })();

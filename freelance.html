@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fnatix ID · Freelance</title>
+<title>FNATIX ID · Jasa Edit Freelance</title>
 <link rel="icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101016">
-<link rel="stylesheet" href="style.css">
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+<meta name="theme-color" content="#090A09">
+<link rel="stylesheet" href="style.css?v=lg2">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
-<body class="locked" data-page="freelance">
+<body class="locked is-data-loading" data-page="freelance">
 <script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
-<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+<div class="auth-gate" role="dialog" aria-modal="true" aria-label="Masuk ke FNATIX ID">
   <form class="auth-card" id="authGateForm">
-    <img src="logo.png" alt="Logo Fnatix ID">
-    <h1>Fnatix ID</h1>
-    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <img width="60" height="60" src="logo.png" alt="Logo FNATIX ID">
+    <h1>FNATIX ID</h1>
+    <p>Kelola pesanan, kas, dan laporan FNATIX ID. Masukkan password untuk melanjutkan.</p>
     <div class="field">
       <label for="authGatePassword">Password</label>
-      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Masukkan password">
     </div>
     <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
     <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
@@ -30,68 +30,99 @@
 
 <main class="sheet-main">
   <div class="page-head">
-    <div><h1>Freelance</h1><p class="sub">Rekap pekerjaan freelance, terpisah dari Fnatix ID</p></div>
-    <button type="button" class="btn btn-amber" id="addFreelanceBtn">Tambah Pesanan</button>
+    <div class="page-head-main">
+      <div class="page-title-row">
+        <h1>Jasa Edit Freelance</h1>
+        <span class="page-pill sky"><span class="legend-dot" style="background:var(--fl)"></span><span>Buku Terpisah</span></span>
+      </div>
+      <p class="sub">Pelacakan target file, potongan, dan rekap gajian per admin.</p>
+    </div>
+    <div class="head-actions">
+      <button type="button" class="btn btn-amber" id="addFreelanceBtn"><i data-lucide="plus" aria-hidden="true" class="icon"></i>Tambah Pesanan</button>
+    </div>
   </div>
-  <div class="state-error" id="flError"></div>
 
-  <section class="block">
-    <div class="block-head"><h2>Target Orderan Bulanan</h2><button type="button" class="btn btn-ghost btn-sm" id="editTargetBtn">Ubah Target</button></div>
-    <div class="progress-head"><span id="freelanceTargetLabel">Bulan ini</span><span class="num" id="freelanceTargetText">0 / 80 file</span></div>
-    <div class="progress-bar"><div class="progress-fill" id="freelanceTargetFill" style="width:0%"></div></div>
-    <p class="small muted" id="freelanceTargetNote" style="margin:8px 0 0"></p>
-  </section>
+  <div class="data-loading-banner" role="status" aria-live="polite">
+    <span>Memuat data pesanan dan gajian freelance...</span>
+  </div>
+  <div class="state-error" id="flError" role="alert"></div>
 
-  <section class="block">
-    <div class="block-head" style="flex-wrap:wrap">
-      <h2>Daftar Pesanan Freelance</h2>
-      <div class="month-nav">
-        <button type="button" class="icon-btn" id="flPrevMonth" aria-label="Bulan sebelumnya"><i data-lucide="chevron-left" class="icon"></i></button>
-        <span class="m-label" id="flMonthLabel">Semua bulan</span>
-        <button type="button" class="icon-btn" id="flNextMonth" aria-label="Bulan berikutnya"><i data-lucide="chevron-right" class="icon"></i></button>
+  <section class="split-even" aria-label="Target dan distribusi admin" style="margin-bottom:16px">
+    <section class="card" aria-label="Target orderan bulanan">
+      <div class="card-head">
+        <h2>Target Orderan Bulanan</h2>
+        <button type="button" class="btn btn-secondary btn-sm" id="editTargetBtn">Ubah Target</button>
       </div>
-    </div>
-    <div class="toolbar" style="margin-top:6px">
-      <label class="search-inline"><i data-lucide="search" class="icon"></i><input type="text" id="freelanceSearch" placeholder="Cari nama file" aria-label="Cari nama file freelance"></label>
-      <input type="month" id="freelanceMonthFilter" class="control" style="width:auto" aria-label="Filter bulan">
-      <select id="freelanceAdminFilter" class="control" style="width:auto" aria-label="Filter admin"></select>
-      <button type="button" class="btn btn-ghost btn-sm" id="flClearFilter">Semua Bulan</button>
-    </div>
-    <div id="freelanceOrderList"></div>
-    <div class="empty hidden" id="flEmpty"><p>Belum ada pesanan freelance pada filter ini.</p></div>
-  </section>
-
-  <section class="block">
-    <div class="block-head"><h2>Quick Pricing Batch</h2></div>
-    <div class="grid-2">
-      <div class="field"><label for="batchMonth">Bulan</label><input class="control" type="month" id="batchMonth"></div>
-      <div class="field"><label for="batchAdmin">Admin</label><select class="control" id="batchAdmin"></select></div>
-    </div>
-    <div class="field"><label for="batchTotal">Total Harga (Rp)</label><input class="control num" type="number" min="0" step="5000" id="batchTotal" placeholder="1500000"></div>
-    <div id="batchPreview" class="small muted" style="margin-bottom:12px">Pilih bulan dan admin untuk melihat pratinjau.</div>
-    <button type="button" class="btn btn-amber" id="applyBatchPricingButton" style="width:100%">Terapkan ke Semua File</button>
-  </section>
-
-  <section class="block">
-    <div class="block-head"><h2>Pendapatan Freelance Bulanan</h2></div>
-    <form id="freelanceIncomeForm">
-      <div class="grid-2">
-        <div class="field"><label for="incomeMonth">Bulan</label><input class="control" type="month" id="incomeMonth"></div>
-        <div class="field"><label for="incomeGross">Total Gajian Diterima (Rp)</label><input class="control num" type="number" min="0" step="10000" id="incomeGross" placeholder="3000000"></div>
+      <div class="progress-head">
+        <span id="freelanceTargetLabel">Bulan ini</span>
+        <span class="num" id="freelanceTargetText">0 / 80 file</span>
       </div>
-      <div id="freelanceMonthAdminBreakdown" class="small muted" style="margin-bottom:10px"></div>
-      <div id="freelanceCutPreview" class="small" style="margin-bottom:12px"></div>
-      <button type="submit" class="btn btn-amber" style="width:100%">Simpan Pendapatan</button>
-    </form>
-    <div class="ledger" id="freelanceIncomeList" style="margin-top:10px"></div>
-    <div class="empty hidden" id="incomeEmpty"><p>Belum ada riwayat gajian tersimpan.</p></div>
+      <div class="progress-bar"><div class="progress-fill" id="freelanceTargetFill" style="width:0%"></div></div>
+      <p class="small muted" id="freelanceTargetNote" style="margin:10px 0 0"></p>
+      <div id="freelanceCutBadgeRow" style="margin-top:12px"></div>
+    </section>
+
+    <section class="card" aria-label="Total pesanan per admin">
+      <div class="card-head"><h2>Total Pesanan per Admin</h2></div>
+      <div class="donut-box">
+        <canvas id="freelanceAdminChart" aria-label="Grafik donat pesanan per admin"></canvas>
+        <div class="donut-center hidden" id="flChartCenter"><b id="flChartCenterVal">0</b><span>total pesanan</span></div>
+      </div>
+      <div class="legend" id="freelanceLegend"></div>
+      <div class="empty hidden" id="flChartEmpty" style="padding:14px 6px"><p>Belum ada pesanan freelance.</p></div>
+    </section>
   </section>
 
-  <section class="block">
-    <div class="block-head"><h2>Total Pesanan per Admin</h2></div>
-    <div class="chart-box small" style="max-width:420px; margin-left:auto; margin-right:auto"><canvas id="freelanceAdminChart" aria-label="Grafik donat pesanan per admin"></canvas><div class="donut-center hidden" id="flChartCenter"><b id="flChartCenterVal">0</b><span>total pesanan</span></div></div>
-    <div class="legend" id="freelanceLegend" style="max-width:420px; margin-left:auto; margin-right:auto"></div>
-    <div class="empty hidden" id="flChartEmpty"><p>Belum ada pesanan freelance.</p></div>
+  <section class="split-2-col" aria-label="Daftar pesanan dan alat hitung freelance">
+    <section class="card" aria-label="Daftar pesanan freelance">
+      <div class="card-head">
+        <h2>Daftar Pesanan Freelance</h2>
+        <div class="month-nav">
+          <button type="button" class="icon-btn" id="flPrevMonth" aria-label="Bulan sebelumnya"><i data-lucide="chevron-left" aria-hidden="true" class="icon"></i></button>
+          <span class="m-label" id="flMonthLabel">Semua bulan</span>
+          <button type="button" class="icon-btn" id="flNextMonth" aria-label="Bulan berikutnya"><i data-lucide="chevron-right" aria-hidden="true" class="icon"></i></button>
+        </div>
+      </div>
+      <div class="toolbar">
+        <label class="search-inline">
+          <i data-lucide="search" aria-hidden="true" class="icon"></i>
+          <input type="text" id="freelanceSearch" placeholder="Cari nama file" aria-label="Cari nama file freelance">
+        </label>
+        <input type="month" id="freelanceMonthFilter" class="control" style="width:auto" aria-label="Filter bulan">
+        <select id="freelanceAdminFilter" class="control" style="width:auto" aria-label="Filter admin"></select>
+        <button type="button" class="btn btn-secondary btn-sm" id="flClearFilter">Semua Bulan</button>
+      </div>
+      <div id="freelanceOrderList"></div>
+      <div class="empty hidden" id="flEmpty"><p>Belum ada pesanan freelance pada filter ini.</p></div>
+    </section>
+
+    <div class="dash-right-stack">
+      <section class="card" aria-label="Quick Pricing Batch">
+        <div class="card-head"><h2>Quick Pricing Batch</h2></div>
+        <div class="grid-2">
+          <div class="field"><label for="batchMonth">Bulan</label><input class="control" type="month" id="batchMonth"></div>
+          <div class="field"><label for="batchAdmin">Admin</label><select class="control" id="batchAdmin"></select></div>
+        </div>
+        <div class="field"><label for="batchTotal">Total Harga (Rp)</label><input class="control num" type="number" min="0" step="5000" id="batchTotal" placeholder="1500000"></div>
+        <div id="batchPreview" class="small muted" style="margin-bottom:12px">Pilih bulan dan admin untuk melihat pratinjau.</div>
+        <button type="button" class="btn btn-amber" id="applyBatchPricingButton" style="width:100%">Terapkan ke Semua File</button>
+      </section>
+
+      <section class="card" aria-label="Pendapatan Freelance Bulanan">
+        <div class="card-head"><h2>Pendapatan Jasa Edit (Freelance)</h2></div>
+        <form id="freelanceIncomeForm">
+          <div class="grid-2">
+            <div class="field"><label for="incomeMonth">Bulan</label><input class="control" type="month" id="incomeMonth"></div>
+            <div class="field"><label for="incomeGross">Total Gajian Diterima (Rp)</label><input class="control num" type="number" min="0" step="10000" id="incomeGross" placeholder="3000000"></div>
+          </div>
+          <div id="freelanceMonthAdminBreakdown" class="small muted" style="margin-bottom:10px"></div>
+          <div id="freelanceCutPreview" class="small" style="margin-bottom:12px"></div>
+          <button type="submit" class="btn btn-amber" style="width:100%">Simpan Pendapatan</button>
+        </form>
+        <div class="ledger" id="freelanceIncomeList" style="margin-top:14px"></div>
+        <div class="empty hidden" id="incomeEmpty"><p>Belum ada riwayat gajian tersimpan.</p></div>
+      </section>
+    </div>
   </section>
 </main>
 
@@ -100,7 +131,9 @@
 <script src="auth-gate.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="core.js"></script>
+<script src="refraction.js?v=lg2"></script>
+<script src="core.js?v=lg2"></script>
 <script src="freelance.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>
 </html>

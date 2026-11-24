@@ -1,140 +1,201 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="light">
+<html lang="id" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fnatix ID · Dashboard</title>
+<title>FNATIX ID · Dashboard</title>
 <link rel="icon" href="favicon.ico">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#101016">
-<link rel="stylesheet" href="style.css">
-<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'light')}catch(e){}</script>
+<meta name="theme-color" content="#090A09">
+<link rel="stylesheet" href="style.css?v=lg2">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('fnatixTheme')||'dark')}catch(e){}</script>
 </head>
-<body class="locked" data-page="dashboard">
+<body class="locked is-data-loading" data-page="dashboard">
 <script>document.body.classList.toggle('locked',localStorage.getItem('fnatixAuthed')!=='1')</script>
-<div class="auth-gate" role="dialog" aria-label="Masuk ke Fnatix ID">
+<div class="auth-gate" role="dialog" aria-modal="true" aria-label="Masuk ke FNATIX ID">
   <form class="auth-card" id="authGateForm">
-    <img src="logo.png" alt="Logo Fnatix ID">
-    <h1>Fnatix ID</h1>
-    <p class="sub">Kelola pesanan, kas, dan laporan Fnatix ID. Masukkan password untuk melanjutkan.</p>
+    <img width="60" height="60" src="logo.png" alt="Logo FNATIX ID">
+    <h1>FNATIX ID</h1>
+    <p>Kelola pesanan, kas, dan laporan FNATIX ID. Masukkan password untuk melanjutkan.</p>
     <div class="field">
       <label for="authGatePassword">Password</label>
-      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Password">
+      <input class="control" type="password" id="authGatePassword" autocomplete="current-password" placeholder="Masukkan password">
     </div>
     <button class="btn btn-primary btn-lg" style="width:100%" type="submit">Masuk</button>
     <p class="auth-error" id="authGateError">Password salah, coba lagi.</p>
   </form>
 </div>
 <div class="splash" id="splash" aria-hidden="true">
-  <img class="splash-icon" src="splash-icon.png" alt="">
-  <img src="splash-name.png" alt="Fnatix ID">
+  <img class="splash-icon" width="84" height="84" src="splash-icon.png" decoding="sync" fetchpriority="high" alt="">
+  <div class="splash-title">FNATIX ID</div>
+  <div class="splash-sub">Jasa Edit &amp; Produk Digital</div>
+  <div class="splash-track"><span class="splash-bar"></span></div>
 </div>
 <div id="shell"></div>
 
 <main class="sheet-main">
   <div class="page-head">
-    <div><h1 id="dashTitle">Dashboard</h1></div>
-    <div class="head-actions">
-      <button type="button" class="page-search" data-global-search aria-label="Buka pencarian global (Ctrl+K)">
-        <i data-lucide="search" class="icon"></i>
-        <span class="page-search-label">Cari customer, pesanan, kategori</span>
-        <kbd>Ctrl K</kbd>
-      </button>
-      <button type="button" class="btn btn-primary" id="dashAddBtn"><i data-lucide="plus" class="icon"></i>Tambah Pesanan</button>
+    <div class="page-head-main">
+      <div class="page-title-row">
+        <h1 id="dashTitle">Ringkasan Kas</h1>
+        <span class="page-pill lime"><span class="legend-dot" style="background:var(--accent)"></span><span id="dashPeriodText">FNATIX ID</span></span>
+      </div>
+      <p class="sub">Pantau pendapatan Jasa Edit dan Produk Digital bulan ini.</p>
     </div>
   </div>
-  <div class="state-error" id="dashError"></div>
 
-  <section class="stat-grid" aria-label="Ringkasan bulan ini">
-    <div class="stat-card">
-      <div class="stat-top"><span class="stat-ic pink"><i data-lucide="wallet" class="icon"></i></span><span class="trend" id="rowIncomeTrend"></span></div>
-      <div class="stat-value num" id="rowIncome">-</div>
-      <div class="stat-label">Pendapatan Fnatix ID bulan ini</div>
-      <div class="stat-note" id="sumStoreMeta">Memuat data</div>
+  <div class="data-loading-banner" role="status" aria-live="polite">
+    <span>Memuat data kas terbaru dari server...</span>
+  </div>
+  <div class="state-error" id="dashError" role="alert"></div>
+
+  <section class="fincro-hero-card" aria-label="Ringkasan pendapatan bulan ini">
+    <div class="fincro-hero-top">
+      <div>
+        <div class="fincro-bal-label">
+          <span>Total Bulan Ini</span>
+          <span class="fincro-cur-pill" id="heroCurrencyPill">IDR</span>
+        </div>
+        <div class="fincro-hero-val num sk-val" id="rowGrand">Rp0</div>
+        <div class="fincro-hero-meta">
+          <span id="heroNote">Jasa Edit (FNATIX ID) ditambah Penjualan Produk Digital bulan ini</span>
+          <span class="trend" id="rowOrdersTrend">0%</span>
+          <span class="num"><strong id="rowOrders">0</strong> <span id="rowOrdersUnit">pesanan</span> jasa edit bulan ini</span>
+        </div>
+      </div>
+
+      <div class="fincro-quick-actions" aria-label="Aksi cepat">
+        <button type="button" class="qa-btn primary" id="dashAddBtn">
+          <span class="qa-circle"><i data-lucide="plus" aria-hidden="true" class="icon"></i></span>
+          <span>Tambah</span>
+        </button>
+        <a class="qa-btn" href="pesanan.html">
+          <span class="qa-circle glass" data-refract="1" data-refract-blur="6"><i data-lucide="receipt-text" aria-hidden="true" class="icon"></i></span>
+          <span>Pesanan</span>
+        </a>
+        <a class="qa-btn" href="produk-digital.html">
+          <span class="qa-circle glass" data-refract="1" data-refract-blur="6"><i data-lucide="layers" aria-hidden="true" class="icon"></i></span>
+          <span>Produk</span>
+        </a>
+        <a class="qa-btn" href="freelance.html">
+          <span class="qa-circle glass" data-refract="1" data-refract-blur="6"><i data-lucide="briefcase" aria-hidden="true" class="icon"></i></span>
+          <span>Freelance</span>
+        </a>
+        <a class="qa-btn" href="laporan.html">
+          <span class="qa-circle glass" data-refract="1" data-refract-blur="6"><i data-lucide="bar-chart-3" aria-hidden="true" class="icon"></i></span>
+          <span>Laporan</span>
+        </a>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-top"><span class="stat-ic lav"><i data-lucide="receipt-text" class="icon"></i></span><span class="trend" id="rowOrdersTrend"></span></div>
-      <div class="stat-value num"><span id="rowOrders">0</span> <span class="unit" id="rowOrdersUnit">pesanan</span></div>
-      <div class="stat-label">Pesanan bulan ini</div>
-      <div class="stat-note">Dibanding bulan lalu</div>
+
+    <div class="fincro-sub-grid">
+      <div class="fincro-sub-card">
+        <div class="fincro-sub-head">
+          <span class="fincro-sub-title"><span class="legend-dot" style="background:var(--accent)"></span>Pendapatan Jasa Edit (FNATIX ID)</span>
+          <span class="trend" id="rowIncomeTrend">0%</span>
+        </div>
+        <div class="fincro-sub-val num sk-val" id="rowIncome">Rp0</div>
+        <div class="fincro-sub-meta" id="sumStoreMeta">Memuat data</div>
+        <div class="micro-bars lime" id="microBarsEdit" aria-hidden="true"></div>
+      </div>
+
+      <div class="fincro-sub-card">
+        <div class="fincro-sub-head">
+          <span class="fincro-sub-title"><span class="legend-dot" style="background:var(--pd)"></span>Penjualan Produk Digital</span>
+          <span class="trend up" id="heroPdUnits">0 unit</span>
+        </div>
+        <div class="fincro-sub-val num sk-val" id="heroPdVal">Rp0</div>
+        <div class="fincro-sub-meta" id="heroPdMeta">Memuat data</div>
+        <div class="micro-bars emerald" id="microBarsPd" aria-hidden="true"></div>
+      </div>
+
+      <div class="fincro-sub-card">
+        <div class="fincro-sub-head">
+          <span class="fincro-sub-title"><span class="legend-dot" style="background:var(--fl)"></span>Pendapatan Jasa Edit (Freelance)</span>
+          <span class="trend sky" id="heroFlBadge">Rekap</span>
+        </div>
+        <div class="fincro-sub-val num sk-val" id="rowFreelance">Rp0</div>
+        <div class="fincro-sub-meta" id="rowFreelanceMeta">Rekap terakhir</div>
+        <div class="micro-bars sky" id="microBarsFl" aria-hidden="true"></div>
+      </div>
     </div>
-    <div class="stat-card">
-      <div class="stat-top"><span class="stat-ic violet"><i data-lucide="briefcase-business" class="icon"></i></span></div>
-      <div class="stat-value num" id="rowFreelance">-</div>
-      <div class="stat-label">Pendapatan Freelance</div>
-      <div class="stat-note" id="rowFreelanceMeta">Rekap terakhir</div>
-    </div>
-    <div class="stat-card layanan-card">
-      <div class="card-head layanan-head" style="margin-bottom:2px">
-        <h2 style="font-size:13.5px">Layanan Terpopuler</h2>
-        <div class="seg sm" role="group" aria-label="Mode grafik layanan">
+
+    <p class="fincro-hero-foot">Total hanya angka tampilan. Buku Jasa Edit (FNATIX ID), Jasa Edit (Freelance), dan Penjualan Produk Digital selalu disimpan terpisah.</p>
+  </section>
+
+  <section class="dash-mid-band" aria-label="Grafik pendapatan harian dan layanan terpopuler">
+    <section class="card" aria-label="Grafik pendapatan harian">
+      <div class="chart-head-row">
+        <h2>Grafik Pendapatan Harian</h2>
+        <div class="chart-legend-pills" id="dashTrendPills">
+          <span class="legend-pill"><span class="legend-dot" style="background:var(--accent)"></span>Jasa Edit (FNATIX ID)</span>
+          <span class="legend-pill" id="dashPdLegendPill"><span class="legend-dot" style="background:var(--pd)"></span>Penjualan Produk Digital</span>
+        </div>
+      </div>
+      <div class="chart-box">
+        <canvas id="dashTrendChart" aria-label="Grafik garis pendapatan harian bulan ini"></canvas>
+      </div>
+      <div class="empty hidden" id="dashChartEmpty">
+        <p>Belum ada pendapatan tercatat pada bulan ini.</p>
+      </div>
+    </section>
+
+    <section class="card layanan-card" aria-label="Layanan Jasa Edit Terpopuler">
+      <div class="card-head">
+        <h2>Layanan Terpopuler</h2>
+        <div class="seg" role="group" aria-label="Mode grafik layanan">
           <button type="button" id="chartModeOrders" class="active">Pesanan</button>
           <button type="button" id="chartModeRevenue">Pendapatan</button>
         </div>
       </div>
-      <div class="donut-box"><canvas id="revenueChart" aria-label="Grafik donat layanan terpopuler"></canvas><div class="donut-center hidden" id="chartCenter"><b id="chartCenterVal">-</b><span id="chartCenterLbl"></span></div></div>
+      <div class="donut-box">
+        <canvas id="revenueChart" aria-label="Grafik donat layanan terpopuler"></canvas>
+        <div class="donut-center hidden" id="chartCenter"><b id="chartCenterVal">-</b><span id="chartCenterLbl"></span></div>
+      </div>
       <div class="legend hidden" id="chartLegend"></div>
-      <div class="empty hidden" id="chartEmpty" style="padding:14px 6px"><p>Belum ada pesanan bulan ini.</p></div>
-    </div>
+      <div class="empty hidden" id="chartEmpty" style="padding:18px 6px"><p>Belum ada pesanan bulan ini.</p></div>
+    </section>
   </section>
 
-  <section class="card" style="margin-top:16px" aria-label="Produk Digital">
+  <section class="card" style="margin-top:16px" aria-label="Penjualan Produk Digital">
     <div class="card-head">
-      <h2>Produk Digital</h2>
-      <a class="link" href="produk-digital.html">Kelola Produk Digital <i data-lucide="arrow-right" class="icon-sm"></i></a>
+      <h2>Penjualan Produk Digital</h2>
+      <a class="link" style="color:var(--pd-ink)" href="produk-digital.html">Kelola Produk Digital <i data-lucide="arrow-right" aria-hidden="true" class="icon-sm"></i></a>
     </div>
     <div class="pd-dash-grid" id="pdDashGrid">
       <div>
         <div class="pd-stats">
-          <div><div class="stat-value num" id="pdDashTotal">-</div><div class="stat-label">Total Pendapatan</div></div>
-          <div><div class="stat-value num"><span id="pdDashUnits">0</span> <span class="unit">unit</span></div><div class="stat-label">Unit Terjual</div></div>
-          <div><div class="stat-value num" id="pdDashTx">0</div><div class="stat-label">Transaksi</div></div>
+          <div><div class="pd-stat-val num sk-val" id="pdDashTotal">Rp0</div><div class="pd-stat-lbl">Total Penjualan</div></div>
+          <div><div class="pd-stat-val num sk-val"><span id="pdDashUnits">0</span> <span class="unit">unit</span></div><div class="pd-stat-lbl">Unit Terjual</div></div>
+          <div><div class="pd-stat-val num sk-val" id="pdDashTx">0</div><div class="pd-stat-lbl">Transaksi</div></div>
         </div>
         <div id="pdDashRows"></div>
-        <p class="pd-note">Buku produk digital disimpan terpisah dari kas jasa edit dan freelance.</p>
+        <p class="pd-note">Buku Penjualan Produk Digital disimpan terpisah dari Pendapatan Jasa Edit (FNATIX ID &amp; Freelance).</p>
       </div>
       <div>
-        <div class="donut-box pd" id="pdDashDonut"><canvas id="pdChart" aria-label="Grafik donat pendapatan per produk digital"></canvas><div class="donut-center hidden" id="pdChartCenter"><b id="pdChartCenterVal">-</b><span>total pendapatan</span></div></div>
+        <div class="donut-box pd" id="pdDashDonut">
+          <canvas id="pdChart" aria-label="Grafik donat penjualan per produk digital"></canvas>
+          <div class="donut-center hidden" id="pdChartCenter"><b id="pdChartCenterVal">-</b><span>total penjualan</span></div>
+        </div>
         <div class="legend hidden" id="pdChartLegend"></div>
-        <div class="empty hidden" id="pdDashChartEmpty" style="padding:14px 6px"><p>Belum ada pendapatan produk digital.</p></div>
+        <div class="empty hidden" id="pdDashChartEmpty" style="padding:14px 6px"><p>Belum ada penjualan produk digital.</p></div>
       </div>
     </div>
     <div class="empty hidden" id="pdDashEmpty">
       <p>Belum ada penjualan produk digital tercatat.</p>
-      <a class="btn btn-primary" href="produk-digital.html">Buka Produk Digital</a>
+      <a class="btn btn-pd" href="produk-digital.html">Buka Produk Digital</a>
     </div>
   </section>
 
-  <div class="dash-grid">
-    <section class="card">
-      <div class="card-head"><h2>Grafik Pendapatan Bulan Ini</h2></div>
-      <div class="chart-box"><canvas id="dashTrendChart" aria-label="Grafik garis pendapatan harian bulan ini"></canvas></div>
-      <div class="empty hidden" id="dashChartEmpty"><p>Belum ada pendapatan bulan ini.</p></div>
-    </section>
-    <section class="hero-card" aria-label="Total bulan ini">
-      <div class="hero-top"><span class="hero-ic"><i data-lucide="sigma" class="icon"></i></span><span class="hero-label">Total Bulan Ini</span></div>
-      <div class="hero-value num" id="rowGrand">-</div>
-      <div class="hero-note" id="heroNote">Fnatix ID bulan ini ditambah Produk Digital bulan ini</div>
-      <div class="hero-divider">
-        <div class="hero-rows">
-          <div class="hero-row"><span class="k">Fnatix ID</span><span class="v num" id="heroStoreVal">-</span></div>
-          <div class="hero-row"><span class="k">Produk Digital</span><span class="v num" id="heroPdVal">-</span></div>
-          <div class="hero-row" id="heroFlRow"><span class="k">Freelance</span><span class="v num" id="heroFlVal">-</span></div>
-        </div>
-        <p class="hero-foot">Total hanya angka tampilan. Data dan laporan Fnatix ID, Produk Digital, dan Freelance selalu disimpan terpisah.</p>
-      </div>
-    </section>
-  </div>
-
-  <section class="card" style="margin-top:16px">
+  <section class="card" style="margin-top:16px" aria-label="Pesanan jasa edit terbaru">
     <div class="card-head">
-      <h2>Pesanan Terbaru</h2>
-      <a class="link" href="pesanan.html">Lihat Semua <i data-lucide="arrow-right" class="icon-sm"></i></a>
+      <h2>Pesanan Jasa Edit Terbaru</h2>
+      <a class="link" href="pesanan.html">Lihat Semua <i data-lucide="arrow-right" aria-hidden="true" class="icon-sm"></i></a>
     </div>
     <div class="table-scroll" id="recentTableWrap">
       <table class="kas-table stacked">
-        <thead><tr><th>Tanggal</th><th>Customer</th><th>Layanan</th><th>Status</th><th class="r">Jumlah</th><th></th></tr></thead>
+        <thead><tr><th>Tanggal</th><th>Customer</th><th>Layanan</th><th>Status</th><th class="r">Jumlah</th><th aria-label="Aksi"></th></tr></thead>
         <tbody id="recentTableBody"></tbody>
       </table>
     </div>
@@ -145,18 +206,16 @@
   </section>
 
   <div class="dash-bottom">
-    <section class="card">
+    <section class="card" aria-label="Insight bisnis">
       <div class="card-head"><h2>Insight</h2></div>
       <div id="dashboardInsight"></div>
     </section>
-    <section class="card">
+    <section class="card" aria-label="Top 3 Customer">
       <div class="card-head"><h2>Top 3 Customer</h2></div>
       <div id="topCustomerList"></div>
       <div class="empty hidden" id="topEmpty"><p>Belum ada customer tercatat.</p></div>
     </section>
   </div>
-
-
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -165,7 +224,9 @@
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="core.js"></script>
+<script src="refraction.js?v=lg2"></script>
+<script src="core.js?v=lg2"></script>
 <script src="dashboard.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('service-worker.js').catch(function(){})}</script>
 </body>
 </html>

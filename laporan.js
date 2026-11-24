@@ -1,4 +1,4 @@
-/* Laporan Pendapatan — KPI, filter periode, grafik, tabel, ekspor, backup, milestones */
+/* Laporan Pendapatan: KPI, filter periode, grafik, tabel, ekspor, backup, milestones. */
 (function(){
 "use strict";
 const F=window.F, $=F.$, $$=F.$$;
@@ -16,16 +16,16 @@ function rangeFor(mode){
 function inRange(t, r){ const d=String(t.date||""); return d>=r.from && d<=r.to; }
 function sumTx(list){ return list.reduce((s,t)=> s+(Number(t.price)||0),0); }
 function badgeHTML(cur, prev){
-  if(prev===0 && cur===0) return '<span class="trend">0%</span><span>pembanding kosong</span>';
-  if(prev===0) return '<span class="trend up">Baru</span><span>dari periode pembanding</span>';
+  if(prev===0 && cur===0) return '<span class="trend">0%</span> pembanding kosong';
+  if(prev===0) return '<span class="trend up">Baru</span> dari periode pembanding';
   const pct=Math.round(((cur-prev)/prev)*100);
-  return `<span class="trend ${pct>=0?"up":"down"}">${pct>=0?"▲":"▼"} ${Math.abs(pct)}%</span><span>dari periode pembanding</span>`;
+  return `<span class="trend ${pct>=0?"up":"down"}">${pct>0?"+":""}${pct}%</span> dari periode pembanding`;
 }
 function render(){
   const txs=F.getTransactions();
   const periodTx=txs.filter(t=> inRange(t, range));
   $("#kpiTotal").textContent=F.formatCurrencyValue(sumTx(periodTx));
-  $("#kpiTotalMeta").innerHTML=`<span>${periodTx.length} pesanan, ${F.esc(F.formatDateValue(range.from))} sampai ${F.esc(F.formatDateValue(range.to))}</span>`;
+  $("#kpiTotalMeta").textContent=`${periodTx.length} pesanan, ${F.formatDateValue(range.from)} sampai ${F.formatDateValue(range.to)}`;
 
   const tk=F.localDateKey(); const yk=F.localDateKey(new Date(Date.now()-864e5));
   const todaySum=sumTx(txs.filter(t=> t.date===tk)); const yestSum=sumTx(txs.filter(t=> t.date===yk));
@@ -63,14 +63,17 @@ function renderChart(periodTx){
   if(!has){ if(chart){ chart.destroy(); chart=null; } return; }
   if(!window.Chart) return;
   const labels=days.map(k=> { const d=F.parseKey(k); return d.getDate()+" "+F.MONTHS_SHORT[d.getMonth()]; });
+  const cs=getComputedStyle(document.documentElement);
+  const grid=(cs.getPropertyValue("--hair")||"#1E2532").trim();
+  const tick=(cs.getPropertyValue("--ink-2")||"#94A3B8").trim();
+  const acc=(cs.getPropertyValue("--accent")||"#3B82F6").trim();
   const dark=document.documentElement.getAttribute("data-theme")==="dark";
-  const grid=dark? "#2A2A38":"#E3E3EA"; const tick=dark? "#A2A5B3":"#55565F";
   const cfg={ type:"line",
-    data:{ labels, datasets:[{ data:sums, borderColor:"#F471B5", backgroundColor:"rgba(244,113,181,.14)", fill:true, tension:.3, pointRadius:3, pointBackgroundColor:"#A78BFA" }] },
+    data:{ labels, datasets:[{ data:sums, borderColor:dark? acc : "#65A30D", backgroundColor:dark? "rgba(214,255,63,.15)":"rgba(132,204,22,.18)", fill:true, tension:.3, pointRadius:3, pointBackgroundColor:dark? acc : "#65A30D", borderWidth:2.2 }] },
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:(c)=> " "+F.formatCurrencyValue(c.parsed.y) } } },
-      scales:{ x:{ grid:{ color:grid }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, maxTicksLimit:10 } },
-               y:{ grid:{ color:grid }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, callback:(v)=> "Rp"+Number(v).toLocaleString("id-ID") } } } } };
+      scales:{ x:{ grid:{ display:false }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, maxTicksLimit:10 } },
+               y:{ grid:{ color:grid }, border:{ display:false }, ticks:{ color:tick, font:{ family:"Plus Jakarta Sans", size:11 }, callback:(v)=> "Rp"+Number(v).toLocaleString("id-ID") } } } } };
   if(chart){ chart.data=cfg.data; chart.options=cfg.options; chart.update(); return; }
   chart=new window.Chart(canvas.getContext("2d"), cfg);
 }
@@ -79,9 +82,9 @@ function renderRecent(txs){
   $("#recentEmpty").classList.toggle("hidden", recent.length>0);
   $("#reportRecent").innerHTML=recent.map(t=> `
     <div class="lrow">
-      <div class="grow"><div class="title">${F.esc(t.name)}</div><div class="sub">${F.esc(t.category)} , ${F.esc(F.formatDateValue(t.date))}</div></div>
-      <span class="stamp">Lunas</span>
-      <span class="amount">${F.esc(F.formatCurrencyValue(t.price))}</span>
+      <div class="grow"><div class="title">${F.esc(t.name)}</div><div class="sub">${F.esc(t.category)}, ${F.esc(F.formatDateValue(t.date))}</div></div>
+      <span class="stamp">${F.icon("check","icon-xs")} Selesai</span>
+      <span class="amount num">${F.esc(F.formatCurrencyValue(t.price))}</span>
     </div>`).join("");
 }
 function renderTable(periodTx){
@@ -93,7 +96,6 @@ function renderTable(periodTx){
     <tr><td>${F.esc(F.formatDateValue(d))}</td><td class="r num">${e.count}</td><td class="r num">${F.esc(F.formatCurrencyValue(e.total))}</td></tr>`).join("");
 }
 
-/* Ekspor */
 function groupedDetail(periodTx){
   const map=new Map();
   periodTx.forEach(t=>{
@@ -109,14 +111,55 @@ function exportPDF(){
     const periodTx=F.getTransactions().filter(t=> inRange(t, range));
     const detail=groupedDetail(periodTx);
     const p=F.getBusinessProfile();
+    const biz=String(p.businessName||"FNATIX ID").toUpperCase();
     const doc=new window.jspdf.jsPDF();
-    doc.setFontSize(16); doc.text(p.businessName||"Fnatix ID", 14, 16);
-    doc.setFontSize(11); doc.text("Laporan Pendapatan, "+F.formatDateValue(range.from)+" sampai "+F.formatDateValue(range.to), 14, 23);
+
+    /* Header Fincro Obsidian + aksen Electric Lime */
+    doc.setFillColor(14, 16, 14);
+    doc.rect(0, 0, 210, 34, "F");
+    doc.setFillColor(214, 255, 63);
+    doc.rect(0, 34, 210, 1.8, "F");
+
+    doc.setTextColor(245, 247, 242);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(17);
+    doc.text(biz, 14, 15);
+
+    doc.setTextColor(163, 171, 160);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text("Laporan Pendapatan Jasa Edit", 14, 22);
+
+    const periodLabel=F.formatDateValue(range.from)+" s.d. "+F.formatDateValue(range.to);
+    doc.setFillColor(214, 255, 63);
+    doc.roundedRect(122, 10, 74, 14, 3, 3, "F");
+    doc.setTextColor(11, 13, 10);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text(periodLabel, 159, 18.5, { align: "center" });
+
+    /* 3 Kartu Ringkasan KPI */
     const total=sumTx(periodTx);
     const months=new Set(periodTx.map(t=> String(t.date).slice(0,7))).size||1;
-    doc.text("Total Pendapatan: "+F.formatCurrencyValue(total), 14, 31);
-    doc.text("Total Pesanan: "+periodTx.length, 14, 37);
-    doc.text("Rata-rata per Bulan: "+F.formatCurrencyValue(Math.round(total/months)), 14, 43);
+    const kpis=[
+      { label:"TOTAL PENDAPATAN", val:F.formatCurrencyValue(total) },
+      { label:"TOTAL PESANAN", val:String(periodTx.length)+" pesanan" },
+      { label:"RATA-RATA PER BULAN", val:F.formatCurrencyValue(Math.round(total/months)) }
+    ];
+    kpis.forEach((k, idx)=>{
+      const x=14 + idx*62;
+      doc.setFillColor(243, 245, 240);
+      doc.setDrawColor(210, 218, 204);
+      doc.roundedRect(x, 42, 58, 20, 3, 3, "FD");
+      doc.setTextColor(74, 82, 70);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.text(k.label, x+5, 49);
+      doc.setTextColor(17, 20, 16);
+      doc.setFontSize(12);
+      doc.text(k.val, x+5, 57.5);
+    });
+
     const body=[]; let lastMonth=""; let subtotal=0;
     const flush=()=>{ if(lastMonth) body.push(["", "Subtotal "+F.monthLabel(lastMonth), "", "", "", F.formatCurrencyValue(subtotal)]); };
     detail.forEach(r=>{
@@ -127,9 +170,42 @@ function exportPDF(){
     });
     flush();
     body.push(["", "Total Keseluruhan", "", "", "", F.formatCurrencyValue(total)]);
-    doc.autoTable({ startY:48, head:[["Tanggal","Customer","Layanan","Qty","Harga Satuan","Total"]], body });
+
+    doc.autoTable({
+      startY:68,
+      head:[["Tanggal","Customer","Layanan","Qty","Harga Satuan","Total"]],
+      body,
+      theme:"grid",
+      styles:{ fontSize:9, textColor:[17,20,16], lineColor:[220,226,214], lineWidth:0.2, cellPadding:3.2 },
+      headStyles:{ fillColor:[20,22,20], textColor:[214,255,63], fontStyle:"bold" },
+      alternateRowStyles:{ fillColor:[247,249,245] },
+      columnStyles:{ 3:{ halign:"right" }, 4:{ halign:"right" }, 5:{ halign:"right" } },
+      didParseCell(data){
+        if(data.section!=="body" || !Array.isArray(data.row.raw)) return;
+        const label=String(data.row.raw[1]||"");
+        if(label.startsWith("Subtotal ")){
+          data.cell.styles.fillColor=[234,239,229];
+          data.cell.styles.fontStyle="bold";
+          data.cell.styles.textColor=[17,20,16];
+        }else if(label==="Total Keseluruhan"){
+          data.cell.styles.fillColor=[20,22,20];
+          data.cell.styles.fontStyle="bold";
+          data.cell.styles.textColor=[214,255,63];
+        }
+      }
+    });
+
     const pages=doc.getNumberOfPages();
-    for(let i=1;i<=pages;i++){ doc.setPage(i); doc.setFontSize(9); doc.text("Halaman "+i+" dari "+pages, 14, 290); }
+    for(let i=1;i<=pages;i++){
+      doc.setPage(i);
+      doc.setDrawColor(220, 226, 214);
+      doc.line(14, 283, 196, 283);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(90, 99, 86);
+      doc.text(biz+" · Buku Pendapatan Jasa Edit (Terpisah dari Freelance & Produk Digital)", 14, 289);
+      doc.text("Halaman "+i+" dari "+pages, 196, 289, { align: "right" });
+    }
     doc.save("laporan-pendapatan-fnatix-id.pdf");
     F.showToast("PDF laporan diunduh");
   }catch(e){ F.showToast("Export PDF belum bisa dijalankan, library belum termuat", "error"); }
@@ -169,7 +245,7 @@ async function importBackup(file){
     else { txs=data.transactions||null; fo=data.freelanceOrders||null; fi=data.freelanceIncome||null; }
     if(!txs && !fo && !fi) throw new Error("format");
     const parts=[];
-    if(txs) parts.push(txs.length+" pesanan Fnatix ID");
+    if(txs) parts.push(txs.length+" pesanan FNATIX ID");
     if(fo) parts.push(fo.length+" pesanan freelance");
     if(fi) parts.push(fi.length+" catatan gajian");
     const ok=await F.showActionConfirm({ title:"Import Backup", message:"Data sekarang akan ditimpa oleh isi backup: "+parts.join(", ")+". Lanjutkan?", confirmLabel:"Ya, impor backup", danger:true });
@@ -183,7 +259,6 @@ async function importBackup(file){
   }catch(e){ F.showToast("File backup tidak valid", "error"); }
 }
 
-/* Milestones */
 const BUSINESS_MILESTONES=[
   { id:"tx100", label:"100 Transaksi", defTarget:100, metric:"transactions", fmt:(v)=> v+" transaksi" },
   { id:"rev5m", label:"Rp5 Juta Revenue", defTarget:5000000, metric:"revenue", fmt:(v)=> F.formatCurrencyValue(v) },
@@ -210,9 +285,9 @@ function renderMilestones(){
     return `
     <div class="mile">
       <div class="mile-top">
-        <div><strong style="font-size:14px">${F.esc(m.label)}</strong><div class="sub small muted">${F.esc(m.fmt(cur))} dari ${F.esc(m.fmt(target))}</div></div>
+        <div><strong style="font-size:14px">${F.esc(m.label)}</strong><div class="small muted">${F.esc(m.fmt(cur))} dari ${F.esc(m.fmt(target))}</div></div>
         <span style="display:flex; gap:8px; align-items:center"><span class="num" style="font-weight:700">${pct}%</span>
-        <button type="button" class="icon-btn" data-mile-edit="${m.id}" aria-label="Edit target ${F.esc(m.label)}">${F.icon("pencil")}</button></span>
+        <button type="button" class="icon-btn" data-mile-edit="${m.id}" aria-label="Edit target ${F.esc(m.label)}">${F.icon("pencil","icon-sm")}</button></span>
       </div>
       <div class="mile-bar"><div class="mile-fill" style="width:${pct}%"></div></div>
     </div>`;
@@ -244,6 +319,7 @@ function editMilestone(id){
 document.addEventListener("DOMContentLoaded", async ()=>{
   try{
     await F.dataReady;
+    document.body.classList.remove("is-data-loading");
     render();
     window.__refreshPage=render;
     window.__onThemeChange=()=>{ if(chart){ chart.destroy(); chart=null; } render(); };
@@ -267,7 +343,8 @@ document.addEventListener("DOMContentLoaded", async ()=>{
     $("#importBackupInput").addEventListener("change", e=>{ if(e.target.files[0]) importBackup(e.target.files[0]); e.target.value=""; });
     $("#milestoneExpandBtn").addEventListener("click", ()=>{ mileExpanded=!mileExpanded; $("#milestoneExpandBtn").textContent=mileExpanded?"Tutup":"Lihat Semua"; renderMilestones(); });
   }catch(e){
-    const err=$("#repError"); if(err){ err.style.display="block"; err.textContent="Data laporan belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
+    document.body.classList.remove("is-data-loading");
+    const err=$("#repError"); if(err){ err.classList.add("show"); err.textContent="Data laporan belum bisa dimuat. Periksa koneksi lalu muat ulang halaman."; }
   }
 });
 })();

@@ -1,5 +1,5 @@
-/* Fnatix ID — Gelap Lembut: core bersama.
-   Shell: rel ikon ramping di desktop, bilah atas + bilah ikon bawah di HP.
+/* FNATIX ID: core bersama.
+   Shell: sidebar berkelompok (collapsible di desktop), topbar utilitas, bilah cepat + drawer di HP.
    Data: Supabase app_data lewat window.cloudStorage (key beku), fallback lokal. */
 (function(){
 "use strict";
@@ -36,7 +36,7 @@ const $ = (s, r)=> (r||document).querySelector(s);
 const $$ = (s, r)=> Array.from((r||document).querySelectorAll(s));
 function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=> ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function uid(){ return "id"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
-function icon(name, cls){ return '<i data-lucide="'+name+'" class="'+(cls||"icon")+'"></i>'; }
+function icon(name, cls){ return '<i data-lucide="'+name+'" aria-hidden="true" class="'+(cls||"icon")+'"></i>'; }
 function refreshIcons(){ if(window.lucide && window.lucide.createIcons) window.lucide.createIcons(); }
 
 /* tanggal */
@@ -78,7 +78,7 @@ function getBusinessProfile(){
   const phone = p.contactPhone || p.phone || "";
   const email = p.contactEmail || p.email || "";
   return {
-    businessName: p.businessName || "Fnatix ID",
+    businessName: String(p.businessName || "FNATIX ID").toUpperCase(),
     phone, contactPhone: phone,
     email, contactEmail: email,
     currency: p.currency || "IDR",
@@ -95,13 +95,6 @@ function formatCurrencyValue(n){
 }
 
 /* data domain */
-/* Normalisasi id: data produksi dari aplikasi lama menyimpan id sebagai
-   ANGKA (Date.now()), sedangkan dataset HTML selalu terbaca sebagai
-   string. Tanpa penyamaan ini, pencarian t.id === dataset.id gagal
-   diam-diam dan tombol aksi baris (struk/edit/duplikat/hapus) mati.
-   Semua baca koleksi lewat getter di bawah, jadi normalisasi di sini
-   menutup seluruh basis: render menulis id string, lookup membandingkan
-   string dengan string. */
 function normIds(list){
   if(Array.isArray(list)) list.forEach(r=>{ if(r && r.id != null && typeof r.id !== "string") r.id = String(r.id); });
   return list;
@@ -118,7 +111,6 @@ function saveFreelanceOrders(list){ setData("fnatixFreelanceOrders", list); }
 function getFreelanceIncome(){ const t = getData("fnatixFreelanceIncome", []); return Array.isArray(t)? normIds(t) : []; }
 function saveFreelanceIncome(list){ setData("fnatixFreelanceIncome", list); }
 function getFreelanceTarget(){ const v = Number(getData("fnatixFreelanceTarget", 80)); return v>0? v : 80; }
-/* Produk digital: buku toko digital, key sendiri, tidak pernah masuk total jasa edit atau freelance. */
 const PRODUK_DIGITAL_PRODUCTS = [
   { id:"relight", label:"Relight", price:35000 },
   { id:"graduation", label:"Graduation", price:30000 },
@@ -206,7 +198,8 @@ function showToast(msg, kind){
   let zone = $(".toast-zone");
   if(!zone){ zone = document.createElement("div"); zone.className = "toast-zone"; document.body.appendChild(zone); }
   const el = document.createElement("div");
-  el.className = "toast";
+  el.className = "toast glass glass-text";
+  el.setAttribute("role", "status");
   el.textContent = String(msg||"");
   if(kind==="error") el.style.background = "var(--danger)";
   zone.appendChild(el);
@@ -214,14 +207,17 @@ function showToast(msg, kind){
 }
 const modalStack = [];
 function openModal(html){
+  const lastFocus = document.activeElement;
   const ov = document.createElement("div");
   ov.className = "modal-overlay";
-  ov.innerHTML = '<div class="modal" role="dialog" aria-modal="true">'+html+"</div>";
+  ov.innerHTML = '<div class="modal glass glass-text" role="dialog" aria-modal="true">'+html+"</div>";
+  ov._returnFocus = lastFocus;
   ov.addEventListener("click", e=>{ if(e.target === ov) closeModal(ov); });
   document.body.appendChild(ov);
   modalStack.push(ov);
   document.body.style.overflow = "hidden";
   refreshIcons();
+  if(window.LiquidGlassRefraction) window.LiquidGlassRefraction.refresh();
   return ov;
 }
 function closeModal(ov){
@@ -230,20 +226,41 @@ function closeModal(ov){
     if(typeof target._confirmSettle === "function") target._confirmSettle(false);
     const i = modalStack.indexOf(target);
     if(i >= 0) modalStack.splice(i, 1);
+    const rf = target._returnFocus;
     target.remove();
+    if(rf && typeof rf.focus === "function" && document.body.contains(rf)) rf.focus();
   }
   if(!modalStack.length) document.body.style.overflow = "";
 }
 function modalHead(title, sub){
   return '<div class="modal-head"><div><h2>'+esc(title)+"</h2>"+(sub? '<p class="sub">'+esc(sub)+"</p>" : "")+
-    '</div><button type="button" class="icon-btn" data-close-modal aria-label="Tutup">'+icon("x")+"</button></div>";
+    '</div><button type="button" class="icon-btn" data-close-modal aria-label="Tutup dialog">'+icon("x")+"</button></div>";
 }
 document.addEventListener("click", e=>{
   const b = e.target.closest("[data-close-modal]");
   if(b){ const ov = b.closest(".modal-overlay"); if(ov) closeModal(ov); }
 });
 document.addEventListener("keydown", e=>{
-  if(e.key === "Escape") closeModal();
+  if(e.key === "Escape"){
+    const drawer = $("#mobileDrawerOverlay");
+    if(drawer && drawer.classList.contains("open")){
+      closeMobileDrawer();
+      return;
+    }
+    const np = $("#notifPop"), nb = $("#notifBtn");
+    if(np && !np.classList.contains("hidden")){
+      np.classList.add("hidden");
+      if(nb){ nb.setAttribute("aria-expanded","false"); nb.focus(); }
+      return;
+    }
+    const pp = $("#profilePop"), pb = $("#profileBtn");
+    if(pp && !pp.classList.contains("hidden")){
+      pp.classList.add("hidden");
+      if(pb){ pb.setAttribute("aria-expanded","false"); pb.focus(); }
+      return;
+    }
+    closeModal();
+  }
 });
 function showActionConfirm(opts){
   const o = opts || {};
@@ -251,7 +268,7 @@ function showActionConfirm(opts){
   const promise = new Promise(r=>{ resolveFn = r; });
   const ov = openModal(
     modalHead(o.title || "Konfirmasi") +
-    '<p class="muted" style="font-size:14px; line-height:1.55">'+esc(o.message || "")+"</p>"+
+    '<p class="muted" style="font-size:14px; line-height:1.55; margin:0">'+esc(o.message || "")+"</p>"+
     '<div class="modal-actions">'+
       '<button type="button" class="btn btn-secondary" id="acCancel">Batal</button>'+
       '<button type="button" class="btn '+(o.danger === false? "btn-primary" : "btn-danger-solid")+'" id="acOk">'+esc(o.confirmLabel || "Ya, Lanjutkan")+"</button>"+
@@ -265,29 +282,29 @@ function showActionConfirm(opts){
 /* baris pesanan */
 function txActionsHTML(id){
   return '<span class="row-actions">'+
-    '<button type="button" class="icon-btn" data-act="receipt" data-id="'+esc(id)+'" title="Struk" aria-label="Struk">'+icon("receipt-text","icon-sm")+"</button>"+
-    '<button type="button" class="icon-btn" data-act="edit" data-id="'+esc(id)+'" title="Edit" aria-label="Edit">'+icon("pencil","icon-sm")+"</button>"+
-    '<button type="button" class="icon-btn" data-act="dup" data-id="'+esc(id)+'" title="Duplikat" aria-label="Duplikat">'+icon("copy","icon-sm")+"</button>"+
-    '<button type="button" class="icon-btn danger" data-act="del" data-id="'+esc(id)+'" title="Hapus" aria-label="Hapus">'+icon("trash-2","icon-sm")+"</button>"+
+    '<button type="button" class="icon-btn" data-act="receipt" data-id="'+esc(id)+'" title="Bukti Order Selesai" aria-label="Buka bukti order selesai">'+icon("badge-check","icon-sm")+"</button>"+
+    '<button type="button" class="icon-btn" data-act="edit" data-id="'+esc(id)+'" title="Edit" aria-label="Edit pesanan">'+icon("pencil","icon-sm")+"</button>"+
+    '<button type="button" class="icon-btn" data-act="dup" data-id="'+esc(id)+'" title="Duplikat" aria-label="Duplikat pesanan">'+icon("copy","icon-sm")+"</button>"+
+    '<button type="button" class="icon-btn danger" data-act="del" data-id="'+esc(id)+'" title="Hapus" aria-label="Hapus pesanan">'+icon("trash-2","icon-sm")+"</button>"+
   "</span>";
 }
 function txTableRowHTML(tx){
   return '<tr>'+
     '<td class="c-date">'+esc(formatDateValue(tx.date))+"</td>"+
-    '<td class="c-cust"><span class="cust-flex"><img class="avatar" src="'+avatarSrc(tx.name)+'" alt="">'+esc(tx.name)+"</span></td>"+
+    '<td class="c-cust"><span class="cust-flex"><img class="avatar" width="34" height="34" src="'+avatarSrc(tx.name)+'" alt="">'+esc(tx.name)+"</span></td>"+
     '<td class="c-cat">'+esc(tx.category||"")+"</td>"+
-    '<td class="c-status"><span class="stamp">Lunas</span></td>'+
-    '<td class="c-amt r">'+esc(formatCurrencyValue(tx.price))+"</td>"+
+    '<td class="c-status"><span class="stamp">'+icon("check","icon-xs")+" Selesai</span></td>"+
+    '<td class="c-amt r num">'+esc(formatCurrencyValue(tx.price))+"</td>"+
     '<td class="c-act">'+txActionsHTML(tx.id)+"</td>"+
   "</tr>";
 }
 function txRowHTML(tx){
   return '<div class="lrow">'+
-    '<img class="avatar" src="'+avatarSrc(tx.name)+'" alt="">'+
+    '<img class="avatar" width="34" height="34" src="'+avatarSrc(tx.name)+'" alt="">'+
     '<div class="grow"><div class="title">'+esc(tx.name)+'</div>'+
     '<div class="sub">'+esc(tx.category||"")+", "+esc(formatDateValue(tx.date))+"</div></div>"+
-    '<span class="stamp">Lunas</span>'+
-    '<span class="amount">'+esc(formatCurrencyValue(tx.price))+"</span>"+
+    '<span class="stamp">'+icon("check","icon-xs")+" Selesai</span>"+
+    '<span class="amount num">'+esc(formatCurrencyValue(tx.price))+"</span>"+
     txActionsHTML(tx.id)+
   "</div>";
 }
@@ -389,43 +406,58 @@ function openOrderModal(existing, onSaved){
   return ov;
 }
 
-/* struk */
+/* bukti order selesai */
+const CHECK_SEAL_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';
 function receiptHTML(tx){
   const p = getBusinessProfile();
+  const biz = String(p.businessName || "FNATIX ID").toUpperCase();
   return '<div class="receipt-paper" id="receiptPaper">'+
-    '<div class="r-head"><img src="'+esc(p.logo || "logo.png")+'" alt="">'+
-      '<div class="r-biz">'+esc(p.businessName)+"</div>"+
-      '<div class="r-sub">Struk Pembayaran'+(p.phone? " , "+esc(p.phone) : "")+"</div></div>"+
-    '<div class="receipt-row"><span class="k">Customer</span><span class="v">'+esc(tx.name||"-")+"</span></div>"+
-    (tx.phone? '<div class="receipt-row"><span class="k">WhatsApp</span><span class="v">'+esc(tx.phone)+"</span></div>" : "")+
-    '<div class="receipt-row"><span class="k">Layanan</span><span class="v">'+esc(tx.category||"-")+"</span></div>"+
-    '<div class="receipt-row"><span class="k">Tanggal</span><span class="v">'+esc(formatDateValue(tx.date))+"</span></div>"+
-    '<div class="receipt-row receipt-total"><span class="k">Total Bayar</span><span class="v amt">'+esc(formatCurrencyValue(tx.price))+"</span></div>"+
-    '<div class="r-foot">Terima kasih sudah order di '+esc(p.businessName)+".</div>"+
+    '<div class="receipt-banner">'+
+      '<span class="receipt-banner-title">'+CHECK_SEAL_SVG+' ORDER SELESAI</span>'+
+      '<span class="receipt-banner-tag">Terverifikasi</span>'+
+    "</div>"+
+    '<div class="receipt-body">'+
+      '<div class="r-head"><img width="42" height="42" src="'+esc(p.logo || "logo.png")+'" alt="Logo '+esc(biz)+'">'+
+        '<div><div class="r-biz">'+esc(biz)+"</div>"+
+        '<div class="r-sub">Tanda Penyelesaian Order Jasa Edit'+(p.phone? ", "+esc(p.phone) : "")+"</div></div></div>"+
+      '<div class="receipt-row"><span class="k">Customer</span><span class="v">'+esc(tx.name||"-")+"</span></div>"+
+      (tx.phone? '<div class="receipt-row"><span class="k">WhatsApp</span><span class="v">'+esc(tx.phone)+"</span></div>" : "")+
+      '<div class="receipt-row"><span class="k">Layanan Jasa Edit</span><span class="v">'+esc(tx.category||"-")+"</span></div>"+
+      '<div class="receipt-row"><span class="k">Tanggal Selesai</span><span class="v">'+esc(formatDateValue(tx.date))+"</span></div>"+
+      '<div class="receipt-row"><span class="k">Status Order</span><span class="receipt-status-pill">Selesai Dikerjakan</span></div>'+
+      '<div class="receipt-total"><span class="k">Biaya Layanan</span><span class="v num">'+esc(formatCurrencyValue(tx.price))+"</span></div>"+
+      '<div class="r-foot">Pesanan jasa edit Anda telah selesai dikerjakan oleh '+esc(biz)+". Terima kasih atas kepercayaannya.</div>"+
+    "</div>"+
   "</div>";
 }
 function receiptText(tx){
   const p = getBusinessProfile();
-  return "Struk "+p.businessName+"\nCustomer: "+(tx.name||"-")+"\nLayanan: "+(tx.category||"-")+"\nTanggal: "+formatDateValue(tx.date)+"\nTotal: "+formatCurrencyValue(tx.price)+"\nTerima kasih sudah order.";
+  const biz = String(p.businessName || "FNATIX ID").toUpperCase();
+  return "*TANDA ORDER SELESAI - "+biz+"*\nStatus: Selesai Dikerjakan\nCustomer: "+(tx.name||"-")+"\nLayanan: "+(tx.category||"-")+"\nTanggal Selesai: "+formatDateValue(tx.date)+"\nBiaya Layanan: "+formatCurrencyValue(tx.price)+"\nPesanan jasa edit Anda telah selesai dikerjakan. Terima kasih sudah order di "+biz+".";
 }
 function openReceiptModal(tx){
   const ov = openModal(
-    modalHead("Struk Pesanan", "Bagikan struk ke customer lewat WhatsApp.")+
+    modalHead("Bukti Order Selesai", "Kirim tanda penyelesaian order jasa edit ke customer lewat WhatsApp.")+
     receiptHTML(tx)+
     '<div class="modal-actions">'+
       '<button type="button" class="btn btn-secondary" id="rcCopy">'+icon("copy","icon-sm")+" Salin Teks</button>"+
-      '<button type="button" class="btn btn-secondary" id="rcPrint">'+icon("printer","icon-sm")+" Cetak</button>"+
+      '<button type="button" class="btn btn-secondary" id="rcPrint">'+icon("printer","icon-sm")+" Cetak / PDF</button>"+
       '<button type="button" class="btn btn-primary" id="rcWa">'+icon("send","icon-sm")+" Kirim WhatsApp</button>"+
     "</div>");
   refreshIcons();
   $("#rcCopy", ov).addEventListener("click", async ()=>{
-    try{ await navigator.clipboard.writeText(receiptText(tx)); showToast("Teks struk disalin"); }
-    catch(e){ showToast("Gagal menyalin teks struk", "error"); }
+    try{ await navigator.clipboard.writeText(receiptText(tx)); showToast("Teks bukti order selesai disalin"); }
+    catch(e){ showToast("Gagal menyalin teks bukti order", "error"); }
   });
   $("#rcPrint", ov).addEventListener("click", ()=>{
-    const w = window.open("", "_blank", "width=420,height=640");
+    const w = window.open("", "_blank", "width=460,height=680");
     if(!w){ showToast("Popup cetak diblokir browser", "error"); return; }
-    w.document.write('<html><head><title>Struk '+esc(getBusinessProfile().businessName)+'</title><style>body{font-family:sans-serif;padding:16px}.receipt-paper{border:1px solid #ccc;border-radius:12px;padding:20px}.r-head{text-align:center;border-bottom:1.5px dashed #bbb;padding-bottom:12px;margin-bottom:10px}.r-head img{width:52px;height:52px}.r-biz{font-weight:700;font-size:16px}.r-sub{color:#666;font-size:12px}.receipt-row{display:flex;justify-content:space-between;padding:5px 0}.receipt-row .k{color:#666}.receipt-row .v{font-weight:600}.receipt-total{border-top:1.5px dashed #bbb;margin-top:8px;padding-top:10px}.r-foot{text-align:center;color:#666;font-size:12px;margin-top:12px}</style></head><body>'+receiptHTML(tx)+"<script>window.onload=function(){window.print()}<\/script></body></html>");
+    const biz = String(getBusinessProfile().businessName || "FNATIX ID").toUpperCase();
+    const dark = document.documentElement.getAttribute("data-theme") === "dark";
+    const printCSS = dark
+      ? "*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:24px;background:#090A09;color:#F5F7F2}.receipt-paper{max-width:420px;margin:0 auto;background:#0E100E;border:1px solid rgba(255,255,255,.14);border-radius:16px;overflow:hidden}.receipt-banner{background:#141614;color:#F5F7F2;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.12);display:flex;justify-content:space-between;align-items:center}.receipt-banner-title{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}.receipt-banner-title svg{color:#34D399}.receipt-banner-tag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;background:#D6FF3F;color:#0B0D0A}.receipt-body{padding:18px}.r-head{display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08);padding-bottom:12px;margin-bottom:10px}.r-head img{width:42px;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,.14);object-fit:cover}.r-biz{font-weight:800;font-size:15.5px;color:#F5F7F2}.r-sub{color:#A3ABA0;font-size:12px}.receipt-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px}.receipt-row .k{color:#A3ABA0}.receipt-row .v{font-weight:700;color:#F5F7F2}.receipt-status-pill{padding:3px 9px;border-radius:7px;font-size:12px;font-weight:800;background:#11281E;color:#34D399;border:1px solid rgba(52,211,153,.28)}.receipt-total{display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(214,255,63,.26);margin-top:12px;padding:13px 16px;background:#1A1D19;border-radius:12px}.receipt-total .k{font-weight:700;color:#A3ABA0;font-size:13px}.receipt-total .v{color:#D6FF3F;font-size:20px;font-weight:800}.r-foot{text-align:center;color:#869083;font-size:12px;margin-top:14px;padding-top:11px;border-top:1px solid rgba(255,255,255,.08)}"
+      : "*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;padding:24px;background:#F4F7FB;color:#0F172A}.receipt-paper{max-width:420px;margin:0 auto;background:#FFFFFF;border:1px solid #CBD5E1;border-radius:16px;overflow:hidden}.receipt-banner{background:#FFFFFF;color:#0F172A;padding:12px 18px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center}.receipt-banner-title{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;letter-spacing:.04em;text-transform:uppercase}.receipt-banner-title svg{color:#047857}.receipt-banner-tag{font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;background:#D6FF3F;color:#0F172A}.receipt-body{padding:16px}.r-head{display:flex;align-items:center;gap:12px;border-bottom:1px solid #E2E8F0;padding-bottom:12px;margin-bottom:10px}.r-head img{width:42px;height:42px;border-radius:10px;border:1px solid #CBD5E1;object-fit:cover}.r-biz{font-weight:800;font-size:15.5px;color:#0F172A}.r-sub{color:#475569;font-size:12px}.receipt-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13.5px}.receipt-row .k{color:#475569}.receipt-row .v{font-weight:700;color:#0F172A}.receipt-status-pill{padding:3px 9px;border-radius:7px;font-size:12px;font-weight:800;background:#ECFDF5;color:#047857;border:1px solid #6EE7B7}.receipt-total{display:flex;justify-content:space-between;align-items:center;border:1px solid #BEF264;margin-top:12px;padding:13px 16px;background:#F7FEE7;border-radius:12px}.receipt-total .k{font-weight:700;color:#475569;font-size:13px}.receipt-total .v{color:#3F6212;font-size:20px;font-weight:800}.r-foot{text-align:center;color:#57657A;font-size:12px;margin-top:14px;padding-top:11px;border-top:1px solid #E2E8F0}";
+    w.document.write('<html><head><title>Order Selesai '+esc(biz)+'</title><style>'+printCSS+'</style></head><body>'+receiptHTML(tx)+"<script>window.onload=function(){window.print()}<\/script></body></html>");
     w.document.close();
   });
   $("#rcWa", ov).addEventListener("click", async ()=>{
@@ -435,12 +467,13 @@ function openReceiptModal(tx){
     let shared = false;
     if(window.html2canvas && paper && navigator.share){
       try{
-        const canvas = await window.html2canvas(paper, { backgroundColor: "#ffffff", scale: 2 });
+        const bg = (getComputedStyle(paper).backgroundColor || "#0E100E").trim();
+        const canvas = await window.html2canvas(paper, { backgroundColor: bg, scale: 2 });
         const blob = await new Promise(r=> canvas.toBlob(r, "image/png"));
         if(blob){
-          const file = new File([blob], "struk-"+String(tx.name||"customer").replace(/\s+/g,"-")+".png", { type: "image/png" });
+          const file = new File([blob], "order-selesai-"+String(tx.name||"customer").replace(/\s+/g,"-")+".png", { type: "image/png" });
           if(navigator.canShare && navigator.canShare({ files: [file] })){
-            await navigator.share({ files: [file], title: "Struk "+getBusinessProfile().businessName });
+            await navigator.share({ files: [file], title: "Order Selesai "+getBusinessProfile().businessName });
             shared = true;
           } else {
             const a = document.createElement("a");
@@ -448,7 +481,7 @@ function openReceiptModal(tx){
             setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
           }
         }
-      }catch(e){ /* lanjut ke tautan wa.me */ }
+      }catch(e){}
     }
     if(!shared) window.open("https://wa.me/"+(wa||"")+"?text="+text, "_blank");
   });
@@ -507,34 +540,45 @@ function openCategoryManager(onChange){
   return ov;
 }
 
-/* pencarian global */
-const NAV = [
-  { id:"dashboard", label:"Dashboard", href:"index.html", icon:"layout-dashboard" },
-  { id:"pesanan", label:"Pesanan", href:"pesanan.html", icon:"receipt-text" },
-  { id:"customers", label:"Customers", href:"customers.html", icon:"users" },
-  { id:"laporan", label:"Laporan", href:"laporan.html", icon:"chart-no-axes-combined" },
-  { id:"freelance", label:"Freelance", href:"freelance.html", icon:"briefcase-business" },
-  { id:"produk", label:"Produk Digital", href:"produk-digital.html", icon:"shopping-bag" },
-  { id:"aset", label:"Aset & Pricelist", href:"aset.html", icon:"folder-open" },
-  { id:"settings", label:"Pengaturan", href:"settings.html", icon:"settings" }
+/* navigasi & pencarian global */
+const NAV_GROUPS = [
+  { label:"Jasa Edit", items:[
+    { id:"dashboard", label:"Dashboard", short:"Ringkas", href:"index.html", icon:"layout-dashboard" },
+    { id:"pesanan", label:"Pesanan", short:"Pesanan", href:"pesanan.html", icon:"receipt-text" },
+    { id:"customers", label:"Customers", short:"Customer", href:"customers.html", icon:"users" },
+    { id:"freelance", label:"Jasa Edit Freelance", short:"Freelance", href:"freelance.html", icon:"briefcase-business" }
+  ]},
+  { label:"Penjualan Digital", items:[
+    { id:"produk", label:"Produk Digital", short:"Produk", href:"produk-digital.html", icon:"shopping-bag" }
+  ]},
+  { label:"Keuangan & Studio", items:[
+    { id:"laporan", label:"Laporan", short:"Laporan", href:"laporan.html", icon:"chart-no-axes-combined" },
+    { id:"aset", label:"Aset & Pricelist", short:"Aset", href:"aset.html", icon:"folder-open" }
+  ]},
+  { label:"Sistem", items:[
+    { id:"settings", label:"Pengaturan", short:"Setelan", href:"settings.html", icon:"settings" },
+    { id:"sistem", label:"Sistem", short:"Sistem", href:"sistem-fnatix.html", icon:"waypoints" }
+  ]}
 ];
+const NAV = NAV_GROUPS.flatMap(g=> g.items);
+
 function openGlobalSearch(){
   const ov = openModal(
-    '<div class="search-input-row">'+icon("search")+'<input id="gsInput" type="text" placeholder="Cari halaman, customer, pesanan, kategori" autocomplete="off">'+
-    '<button type="button" class="icon-btn" data-close-modal aria-label="Tutup">'+icon("x")+"</button></div>"+
+    '<div class="search-input-row">'+icon("search")+'<input id="gsInput" type="text" placeholder="Cari halaman, customer, pesanan, kategori" aria-label="Pencarian global" autocomplete="off">'+
+    '<button type="button" class="icon-btn" data-close-modal aria-label="Tutup pencarian">'+icon("x")+"</button></div>"+
     '<div id="gsResults"></div>');
   const input = $("#gsInput", ov), box = $("#gsResults", ov);
   function draw(){
     const q = input.value.trim().toLowerCase();
-    if(!q){ box.innerHTML = '<div class="empty"><p>Ketik untuk mencari di seluruh data Fnatix ID.</p></div>'; return; }
+    if(!q){ box.innerHTML = '<div class="empty"><p>Ketik nama customer, layanan, kategori, atau halaman tujuan di FNATIX ID.</p></div>'; return; }
     const pages = NAV.filter(n=> n.label.toLowerCase().includes(q));
     const custs = buildCustomers().filter(c=> c.name.toLowerCase().includes(q)).slice(0,5);
     const txs = getTransactions().filter(t=> String(t.name||"").toLowerCase().includes(q) || String(t.category||"").toLowerCase().includes(q)).slice(0,6);
     const cats = getCategories().filter(c=> c.toLowerCase().includes(q));
     let html = "";
     if(pages.length) html += '<div class="search-group-label">Halaman</div>'+pages.map(n=> '<button type="button" class="search-hit" data-go="'+n.href+'">'+icon(n.icon)+'<span class="grow"><span class="title">'+esc(n.label)+'</span></span></button>').join("");
-    if(custs.length) html += '<div class="search-group-label">Customer</div>'+custs.map(c=> '<button type="button" class="search-hit" data-go="customers.html"><img class="avatar" src="'+avatarSrc(c.name)+'" alt=""><span class="grow"><span class="title">'+esc(c.name)+'</span><span class="sub" style="display:block">'+c.orders+" pesanan, "+esc(formatCurrencyValue(c.total))+"</span></span></button>").join("");
-    if(txs.length) html += '<div class="search-group-label">Pesanan</div>'+txs.map(t=> '<button type="button" class="search-hit" data-go="pesanan.html">'+icon("receipt-text")+'<span class="grow"><span class="title">'+esc(t.name)+'</span><span class="sub" style="display:block">'+esc(t.category||"")+", "+esc(formatDateValue(t.date))+'</span></span><span class="num" style="font-weight:600">'+esc(formatCurrencyValue(t.price))+"</span></button>").join("");
+    if(custs.length) html += '<div class="search-group-label">Customer</div>'+custs.map(c=> '<button type="button" class="search-hit" data-go="customers.html"><img class="avatar" width="34" height="34" src="'+avatarSrc(c.name)+'" alt=""><span class="grow"><span class="title">'+esc(c.name)+'</span><span class="sub" style="display:block">'+c.orders+" pesanan, "+esc(formatCurrencyValue(c.total))+"</span></span></button>").join("");
+    if(txs.length) html += '<div class="search-group-label">Pesanan</div>'+txs.map(t=> '<button type="button" class="search-hit" data-go="pesanan.html">'+icon("receipt-text")+'<span class="grow"><span class="title">'+esc(t.name)+'</span><span class="sub" style="display:block">'+esc(t.category||"")+", "+esc(formatDateValue(t.date))+'</span></span><span class="num">'+esc(formatCurrencyValue(t.price))+"</span></button>").join("");
     if(cats.length) html += '<div class="search-group-label">Kategori</div>'+cats.map(c=> '<button type="button" class="search-hit" data-go="pesanan.html">'+icon("tag")+'<span class="grow"><span class="title">'+esc(c)+"</span></span></button>").join("");
     box.innerHTML = html || '<div class="empty"><p>Tidak ada hasil untuk pencarian ini.</p></div>';
     refreshIcons();
@@ -547,11 +591,17 @@ function openGlobalSearch(){
 }
 
 /* tema & branding */
-function currentTheme(){ return document.documentElement.getAttribute("data-theme") || "light"; }
+function currentTheme(){ return document.documentElement.getAttribute("data-theme") || "dark"; }
 function applyTheme(t){
   document.documentElement.setAttribute("data-theme", t);
   try{ localStorage.setItem("fnatixTheme", t); }catch(e){}
-  $$("[data-theme-toggle]").forEach(b=>{ b.innerHTML = icon(t === "dark"? "sun" : "moon"); });
+  const meta = $('meta[name="theme-color"]');
+  if(meta) meta.setAttribute("content", t === "dark"? "#090A09" : "#EDF2FA");
+  $$("[data-theme-toggle]").forEach(b=>{
+    if(b.dataset.themeText === "1") b.textContent = t === "dark"? "Aktifkan Tema Terang" : "Aktifkan Tema Gelap";
+    else b.innerHTML = icon(t === "dark"? "sun" : "moon");
+    b.setAttribute("aria-label", t === "dark"? "Ganti ke tema terang" : "Ganti ke tema gelap");
+  });
   refreshIcons();
   if(typeof window.__onThemeChange === "function") window.__onThemeChange();
 }
@@ -584,59 +634,30 @@ function renderNotifPop(pop){
   });
 }
 
-/* indikator geser navigasi liquid: sorotan meluncur ke item aktif,
-   mulai dari posisi halaman sebelumnya (sessionStorage) bila ada */
-function placeNavInd(ind, link, axis){
-  if(!ind || !link){ if(ind) ind.classList.remove("on"); return; }
-  if(axis === "y"){
-    ind.style.height = link.offsetHeight+"px";
-    ind.style.transform = "translateY("+link.offsetTop+"px)";
-  } else {
-    ind.style.width = link.offsetWidth+"px";
-    ind.style.transform = "translateX("+link.offsetLeft+"px)";
-  }
-  ind.classList.add("on");
+/* mobile drawer */
+function openMobileDrawer(){
+  const ov = $("#mobileDrawerOverlay");
+  const btn = $("#mobileMenuBtn");
+  if(!ov) return;
+  ov.classList.add("open");
+  if(btn) btn.setAttribute("aria-expanded", "true");
+  document.body.style.overflow = "hidden";
+  const closeBtn = $("#mobileDrawerClose");
+  if(closeBtn) closeBtn.focus();
 }
-function initNavIndicators(){
-  const navs = [
-    { ind: $(".bb-ind"), links: $$(".bb-link"), axis: "x" },
-    { ind: $(".rail-ind"), links: $$(".rail-link"), axis: "y" }
-  ];
-  let prevHref = null;
-  try{ prevHref = sessionStorage.getItem("fnatixNavHref"); }catch(e){}
-  navs.forEach(nv=>{
-    if(!nv.ind || !nv.links.length) return;
-    const ai = nv.links.findIndex(a=> a.classList.contains("active"));
-    if(ai < 0){ nv.ind.classList.remove("on"); return; }
-    nv.activeLink = nv.links[ai];
-    const pi = prevHref? nv.links.findIndex(a=> a.getAttribute("href") === prevHref) : -1;
-    if(pi >= 0 && pi !== ai){
-      nv.ind.classList.add("no-anim");
-      placeNavInd(nv.ind, nv.links[pi], nv.axis);
-      void nv.ind.offsetWidth;
-      nv.ind.classList.remove("no-anim");
-      requestAnimationFrame(()=> placeNavInd(nv.ind, nv.links[ai], nv.axis));
-    } else {
-      placeNavInd(nv.ind, nv.links[ai], nv.axis);
-    }
-  });
-  const activeLink = $(".bb-link.active") || $(".rail-link.active");
-  if(activeLink){ try{ sessionStorage.setItem("fnatixNavHref", activeLink.getAttribute("href")); }catch(e){} }
-  if(!window.__navIndBound){
-    window.__navIndBound = true;
-    const reposition = ()=> navs.forEach(nv=>{
-      if(nv.ind && nv.activeLink){
-        nv.ind.classList.add("no-anim");
-        placeNavInd(nv.ind, nv.activeLink, nv.axis);
-        nv.ind.classList.remove("no-anim");
-      }
-    });
-    window.addEventListener("resize", reposition);
-    window.addEventListener("load", reposition);
+function closeMobileDrawer(){
+  const ov = $("#mobileDrawerOverlay");
+  const btn = $("#mobileMenuBtn");
+  if(!ov) return;
+  ov.classList.remove("open");
+  if(btn){
+    btn.setAttribute("aria-expanded", "false");
+    btn.focus();
   }
+  if(!modalStack.length) document.body.style.overflow = "";
 }
 
-/* shell: rel ikon ramping + bilah HP */
+/* shell */
 function buildShell(){
   const host = $("#shell");
   if(!host) return;
@@ -648,90 +669,211 @@ function buildShell(){
   const monthText = MONTHS_ID[now.getMonth()];
   const yearText = String(now.getFullYear());
   const dateText = weekdayText+", "+dayText+" "+monthText+" "+yearText;
-  const navLinks = NAV.map(n=> ({ id:n.id, label:n.label, href:n.href, icon:n.icon }));
-  navLinks.push({ id:"sistem", label:"Sistem", href:"sistem-fnatix.html", icon:"waypoints" });
+
+  let collapsed = false;
+  try{ collapsed = localStorage.getItem("fnatixSidebarCollapsed") === "1"; }catch(e){}
+  document.body.classList.toggle("rail-collapsed", collapsed);
+
+  const railGroupsHTML = NAV_GROUPS.map(g=>
+    '<div class="rail-group">'+
+      '<div class="rail-group-label">'+esc(g.label)+"</div>"+
+      g.items.map(n=>
+        '<a class="rail-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+
+          icon(n.icon)+'<span class="rail-label">'+esc(n.label)+"</span>"+
+          (n.id === "pesanan"? '<span class="rail-count-pill hidden" id="navOrderBadge">0</span>' : "")+
+        "</a>"
+      ).join("")+
+    "</div>"
+  ).join("");
+
   const railHTML =
-    '<aside class="rail">'+
-      '<a class="rail-brand" href="index.html" aria-label="'+esc(String(p.businessName).toUpperCase())+'"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"></a>'+
-      '<nav class="rail-nav" aria-label="Navigasi halaman">'+
-        '<span class="rail-ind" aria-hidden="true"></span>'+
-        navLinks.map(n=> '<a class="rail-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+icon(n.icon)+"</a>").join("")+
-      "</nav>"+
+    '<aside class="rail glass glass-text" aria-label="Menu utama">'+
+      '<div class="rail-head">'+
+        '<a class="rail-brand" href="index.html" aria-label="'+esc(String(p.businessName).toUpperCase())+'">'+
+          '<img class="brand-logo" width="32" height="32" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'">'+
+          '<span class="brand-name">'+esc(String(p.businessName).toUpperCase())+"</span>"+
+        "</a>"+
+        '<button type="button" class="rail-collapse-btn" id="railCollapseBtn" aria-expanded="'+(!collapsed)+'" aria-label="'+(collapsed? "Lebarkan sidebar" : "Ciutkan sidebar")+'" title="'+(collapsed? "Lebarkan sidebar" : "Ciutkan sidebar")+'">'+
+          icon(collapsed? "panel-left-open" : "panel-left-close", "icon-sm")+
+        "</button>"+
+      "</div>"+
+      '<div class="rail-search-wrap">'+
+        '<button type="button" class="rail-search" data-global-search aria-label="Buka pencarian global (Ctrl+K)">'+
+          icon("search")+'<span>Cari data...</span><kbd>Ctrl K</kbd>'+
+        "</button>"+
+      "</div>"+
+      '<nav class="rail-nav" aria-label="Navigasi halaman">'+railGroupsHTML+"</nav>"+
+      '<div class="rail-foot">'+
+        '<div class="dock-item profile-wrap">'+
+          '<button type="button" class="icon-btn" id="profileBtn" aria-label="Menu profil" aria-expanded="false">'+icon("circle-user-round")+"</button>"+
+          '<div class="pop glass glass-text hidden" id="profilePop">'+
+            '<a class="pop-item" href="settings.html">'+icon("settings","icon-sm")+" Pengaturan</a>"+
+            '<button type="button" class="pop-item danger" id="logoutBtn">'+icon("log-out","icon-sm")+" Keluar</button>"+
+          "</div>"+
+        "</div>"+
+        '<span class="small muted rail-label" style="font-weight:700">FNATIX ID</span>'+
+      "</div>"+
     "</aside>";
-  const dockHTML =
-    '<div class="dock">'+
-      '<div class="dock-item"><button type="button" class="icon-btn" id="notifBtn" aria-label="Notifikasi">'+icon("bell")+'<span class="badge hidden" id="notifBadge">0</span></button>'+
-      '<div class="pop notif-pop hidden" id="notifPop"></div></div>'+
-      '<div class="dock-item"><button type="button" class="icon-btn" data-theme-toggle aria-label="Ganti tema"></button></div>'+
-      '<div class="dock-item profile-wrap">'+
-        '<button type="button" class="icon-btn" id="profileBtn" aria-label="Menu profil">'+icon("circle-user-round")+"</button>"+
-        '<div class="pop hidden" id="profilePop">'+
-          '<a class="pop-item" href="settings.html">'+icon("settings","icon-sm")+" Pengaturan</a>"+
-          '<button type="button" class="pop-item danger" id="logoutBtn">'+icon("log-out","icon-sm")+" Keluar</button>"+
+
+  const topbarHTML =
+    '<header class="topbar glass glass-text" data-refract="0.8" data-refract-blur="12">'+
+      '<a class="top-brand" href="index.html">'+
+        '<img class="brand-logo" width="32" height="32" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'">'+
+        '<span class="brand-stack"><span class="brand-name">'+esc(String(p.businessName).toUpperCase())+'</span><span class="top-date-inline">'+esc(dateText)+"</span></span>"+
+      "</a>"+
+      '<div class="top-context"><span class="top-date-chip">'+icon("calendar","icon-sm")+'<span>'+esc(dateText)+"</span></span></div>"+
+      '<div class="top-right">'+
+        '<button type="button" class="icon-btn mobile-search-btn" data-global-search aria-label="Cari data">'+icon("search")+"</button>"+
+        '<div class="dock-item">'+
+          '<button type="button" class="icon-btn" id="notifBtn" aria-label="Notifikasi" aria-expanded="false">'+icon("bell")+'<span class="badge hidden" id="notifBadge">0</span></button>'+
+          '<div class="pop glass glass-text notif-pop hidden" id="notifPop"></div>'+
+        "</div>"+
+        '<button type="button" class="icon-btn" data-theme-toggle aria-label="Ganti tema"></button>'+
+      "</div>"+
+    "</header>";
+
+  const quickIds = ["dashboard", "pesanan", "produk", "freelance"];
+  const quickItems = quickIds.map(id=> NAV.find(n=> n.id === id)).filter(Boolean);
+  const bottomHTML =
+    '<nav class="bottombar glass glass-text" data-refract="0.9" data-refract-blur="12" aria-label="Navigasi cepat HP">'+
+      quickItems.map(n=>
+        '<a class="bb-link'+(n.id === page? " active" : "")+'" href="'+n.href+'"'+(n.id === page? ' aria-current="page"' : "")+">"+
+          icon(n.icon)+'<span>'+esc(n.short)+"</span>"+
+        "</a>"
+      ).join("")+
+      '<button type="button" class="bb-link" id="mobileMenuBtn" aria-expanded="false" aria-controls="mobileDrawerOverlay">'+
+        icon("menu")+'<span>Menu</span>'+
+      "</button>"+
+    "</nav>";
+
+  const drawerHTML =
+    '<div class="mobile-drawer-overlay" id="mobileDrawerOverlay" role="dialog" aria-modal="true" aria-label="Semua halaman">'+
+      '<div class="mobile-drawer glass glass-text">'+
+        '<div class="mobile-drawer-head">'+
+          '<h2>Navigasi FNATIX ID</h2>'+
+          '<button type="button" class="icon-btn" id="mobileDrawerClose" aria-label="Tutup menu">'+icon("x")+"</button>"+
+        "</div>"+
+        '<div class="mobile-drawer-grid">'+
+          NAV.map(n=>
+            '<a class="mobile-drawer-link'+(n.id === page? " active" : "")+'" href="'+n.href+'"'+(n.id === page? ' aria-current="page"' : "")+">"+
+              icon(n.icon, "icon-sm")+'<span>'+esc(n.label)+"</span>"+
+            "</a>"
+          ).join("")+
+        "</div>"+
+        '<div class="mobile-drawer-foot">'+
+          '<button type="button" class="btn btn-secondary" style="flex:1" id="mobileSearchDrawerBtn">'+icon("search","icon-sm")+" Cari Data</button>"+
+          '<button type="button" class="btn btn-danger" id="mobileLogoutBtn">'+icon("log-out","icon-sm")+" Keluar</button>"+
         "</div>"+
       "</div>"+
     "</div>";
-  const topbarHTML =
-    '<header class="topbar">'+
-      '<a class="top-brand" href="index.html"><img class="brand-logo" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'"><span class="brand-stack"><span class="brand-name">'+esc(String(p.businessName).toUpperCase())+'</span><span class="top-date top-date-inline">'+esc(dateText)+"</span></span></a>"+
-      '<div class="top-date-block"><span class="top-weekday">'+esc(weekdayText)+'</span>'+
-      '<span class="top-date"><span class="td-day num">'+esc(dayText)+' </span><em class="td-month">'+esc(monthText)+'</em><span class="td-year num"> '+esc(yearText)+"</span></span></div>"+
-      '<button type="button" class="top-search" data-global-search aria-label="Buka pencarian global (Ctrl+K)">'+icon("search")+'<span class="top-search-label">Cari customer, pesanan, kategori</span><kbd>Ctrl K</kbd></button>'+
-    "</header>";
-  const bottomHTML =
-    '<nav class="bottombar" aria-label="Navigasi halaman">'+
-      '<span class="bb-ind" aria-hidden="true"></span>'+
-      navLinks.map(n=> '<a class="bb-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+icon(n.icon)+"</a>").join("")+
-    "</nav>";
+
   const main = document.querySelector("main.sheet-main");
   if(main){
+    main.id = "mainContent";
+    main.setAttribute("tabindex", "-1");
+    const skip = document.createElement("a");
+    skip.className = "skip-link";
+    skip.href = "#mainContent";
+    skip.textContent = "Lewati ke konten utama";
+
     const wrap = document.createElement("div");
     wrap.className = "app";
-    wrap.innerHTML = railHTML + dockHTML;
-    const content = document.createElement("div");
-    content.className = "content";
+    wrap.innerHTML = railHTML;
+
+    const workspace = document.createElement("div");
+    workspace.className = "workspace";
+
     const tb = document.createElement("div");
     tb.innerHTML = topbarHTML;
-    content.appendChild(tb.firstElementChild);
+    workspace.appendChild(tb.firstElementChild);
+    const se = document.createElement("div");
+    se.className = "scroll-edge";
+    se.setAttribute("aria-hidden", "true");
+    workspace.appendChild(se);
+
+    const content = document.createElement("div");
+    content.className = "content";
     content.appendChild(main);
+    workspace.appendChild(content);
+
     const foot = document.createElement("footer");
     foot.className = "sheet-foot";
-    foot.innerHTML = "<span>"+esc(p.businessName)+" · Dasbor Kas</span><span>Data Fnatix ID dan Freelance selalu terpisah.</span>";
-    content.appendChild(foot);
-    wrap.appendChild(content);
+    foot.innerHTML = "<span>"+esc(String(p.businessName).toUpperCase())+" · Dua Kategori Buku</span><span>Pendapatan Jasa Edit (FNATIX ID & Freelance) dan Penjualan Produk Digital selalu terpisah.</span>";
+    workspace.appendChild(foot);
+
+    wrap.appendChild(workspace);
+
     const bb = document.createElement("div");
     bb.innerHTML = bottomHTML;
     wrap.appendChild(bb.firstElementChild);
+
+    const dr = document.createElement("div");
+    dr.innerHTML = drawerHTML;
+    wrap.appendChild(dr.firstElementChild);
+
     host.replaceWith(wrap);
+    document.body.insertBefore(skip, wrap);
   }
+
+  /* Sidebar collapse */
+  const colBtn = $("#railCollapseBtn");
+  if(colBtn){
+    colBtn.addEventListener("click", ()=>{
+      const next = !document.body.classList.contains("rail-collapsed");
+      document.body.classList.toggle("rail-collapsed", next);
+      colBtn.setAttribute("aria-expanded", String(!next));
+      colBtn.setAttribute("aria-label", next? "Lebarkan sidebar" : "Ciutkan sidebar");
+      colBtn.setAttribute("title", next? "Lebarkan sidebar" : "Ciutkan sidebar");
+      colBtn.innerHTML = icon(next? "panel-left-open" : "panel-left-close", "icon-sm");
+      refreshIcons();
+      try{ localStorage.setItem("fnatixSidebarCollapsed", next? "1" : "0"); }catch(e){}
+    });
+  }
+
+  /* Mobile drawer events */
+  const mmBtn = $("#mobileMenuBtn");
+  const mmClose = $("#mobileDrawerClose");
+  const mmOv = $("#mobileDrawerOverlay");
+  if(mmBtn) mmBtn.addEventListener("click", openMobileDrawer);
+  if(mmClose) mmClose.addEventListener("click", closeMobileDrawer);
+  if(mmOv) mmOv.addEventListener("click", e=>{ if(e.target === mmOv) closeMobileDrawer(); });
+  const msDrawerBtn = $("#mobileSearchDrawerBtn");
+  if(msDrawerBtn) msDrawerBtn.addEventListener("click", ()=>{ closeMobileDrawer(); openGlobalSearch(); });
+  const mLogout = $("#mobileLogoutBtn");
+  if(mLogout) mLogout.addEventListener("click", ()=>{
+    try{ localStorage.removeItem("fnatixAuthed"); }catch(e){}
+    location.href = "index.html";
+  });
+
   $$("[data-theme-toggle]").forEach(b=> b.addEventListener("click", ()=> applyTheme(currentTheme() === "dark"? "light" : "dark")));
   $$("[data-global-search]").forEach(b=> b.addEventListener("click", ()=> openGlobalSearch()));
   applyTheme(currentTheme());
   applyBusinessBranding();
   updateNotifBadge();
-  const activeTab = $(".rail-link.active");
-  if(activeTab && activeTab.scrollIntoView) activeTab.scrollIntoView({ block:"nearest", inline:"center" });
+
   const notifBtn = $("#notifBtn"), notifPop = $("#notifPop");
   const profileBtn = $("#profileBtn"), profilePop = $("#profilePop");
   function closePops(except){
-    [notifPop, profilePop].forEach(pp=>{ if(pp && pp !== except) pp.classList.add("hidden"); });
+    if(notifPop && notifPop !== except){ notifPop.classList.add("hidden"); if(notifBtn) notifBtn.setAttribute("aria-expanded","false"); }
+    if(profilePop && profilePop !== except){ profilePop.classList.add("hidden"); if(profileBtn) profileBtn.setAttribute("aria-expanded","false"); }
   }
   if(notifBtn) notifBtn.addEventListener("click", e=>{
     e.stopPropagation();
     const willOpen = notifPop.classList.contains("hidden");
     closePops(notifPop);
-    if(willOpen){ renderNotifPop(notifPop); notifPop.classList.remove("hidden"); }
-    else notifPop.classList.add("hidden");
+    if(willOpen){ renderNotifPop(notifPop); notifPop.classList.remove("hidden"); notifBtn.setAttribute("aria-expanded","true"); }
+    else { notifPop.classList.add("hidden"); notifBtn.setAttribute("aria-expanded","false"); }
   });
   if(profileBtn) profileBtn.addEventListener("click", e=>{
     e.stopPropagation();
     const willOpen = profilePop.classList.contains("hidden");
     closePops(profilePop);
     profilePop.classList.toggle("hidden", !willOpen);
+    profileBtn.setAttribute("aria-expanded", String(willOpen));
   });
   document.addEventListener("click", e=>{
-    if(notifPop && !notifPop.contains(e.target)) notifPop.classList.add("hidden");
-    if(profilePop && !profilePop.contains(e.target)) profilePop.classList.add("hidden");
+    if(notifPop && !notifPop.contains(e.target)){ notifPop.classList.add("hidden"); if(notifBtn) notifBtn.setAttribute("aria-expanded","false"); }
+    if(profilePop && !profilePop.contains(e.target)){ profilePop.classList.add("hidden"); if(profileBtn) profileBtn.setAttribute("aria-expanded","false"); }
   });
   const logout = $("#logoutBtn");
   if(logout) logout.addEventListener("click", ()=>{
@@ -742,10 +884,20 @@ function buildShell(){
     if((e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === "k"){ e.preventDefault(); openGlobalSearch(); }
   });
   refreshIcons();
-  initNavIndicators();
+  updateNavOrderBadge();
+  if(window.LiquidGlassRefraction) window.LiquidGlassRefraction.refresh();
 }
+function updateNavOrderBadge(){
+  const b = $("#navOrderBadge");
+  if(!b) return;
+  const mk = localMonthKey();
+  const n = getTransactions().filter(t=> String(t.date||"").slice(0,7) === mk).length;
+  b.textContent = String(n);
+  b.classList.toggle("hidden", n === 0);
+}
+dataReady.then(()=>{ updateNavOrderBadge(); $$(".sk-val").forEach(el=> el.classList.remove("sk-val")); }).catch(()=>{});
 
-/* splash (dashboard saja) */
+/* splash (ringkas, tanpa animasi berulang) */
 function initSplash(){
   const sp = $("#splash");
   if(!sp) return;
@@ -755,8 +907,8 @@ function initSplash(){
   setTimeout(()=>{
     sp.classList.add("hide");
     try{ sessionStorage.setItem("fnatixSplashSeen", "1"); }catch(e){}
-    setTimeout(()=> sp.remove(), 450);
-  }, 2000);
+    setTimeout(()=> sp.remove(), 350);
+  }, 750);
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
