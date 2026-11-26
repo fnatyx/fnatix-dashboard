@@ -1,12 +1,12 @@
-/* FNATIX ID: service worker. Network-first, cache fnatix-fincro-v10. */
-const CACHE = "fnatix-fincro-v10";
+/* FNATIX ID: service worker. Network-first, cache fnatix-fincro-v14. */
+const CACHE = "fnatix-fincro-v14";
 const ASSETS = [
   "./", "index.html", "pesanan.html", "customers.html", "laporan.html",
   "freelance.html", "produk-digital.html", "aset.html", "settings.html", "sistem-fnatix.html",
-  "style.css?v=lg5", "refraction.js?v=lg5", "core.js?v=lg5", "dashboard.js", "pesanan.js", "customers.js",
+  "style.css?v=lg9", "refraction.js?v=lg9", "core.js?v=lg9", "dashboard.js", "pesanan.js", "customers.js",
   "laporan.js", "freelance.js", "produk-digital.js", "aset.js", "settings.js",
   "supabase-config.js", "auth-gate.js",
-  "fonts/pjs-var-latin.woff2", "fonts/pjs-var-latin-ext.woff2",
+  "fonts/pjs-var-latin.woff2", "fonts/pjs-var-latin-ext.woff2", "fonts/InstrumentSerif-Regular.woff2", "fonts/InstrumentSerif-Italic.woff2",
   "icon-192.png", "apple-touch-icon.png", "logo.png", "logo-glyph.png", "logo-maskable.png", "favicon.ico", "manifest.json",
   "splash-icon.png",
   "assets/avatars/a01.webp", "assets/avatars/a02.webp", "assets/avatars/a03.webp", "assets/avatars/a04.webp",

@@ -670,65 +670,49 @@ function buildShell(){
   const yearText = String(now.getFullYear());
   const dateText = weekdayText+", "+dayText+" "+monthText+" "+yearText;
 
-  let collapsed = false;
-  try{ collapsed = localStorage.getItem("fnatixSidebarCollapsed") === "1"; }catch(e){}
-  document.body.classList.toggle("rail-collapsed", collapsed);
+  const primaryIds = ["dashboard", "pesanan", "customers", "freelance", "produk", "laporan", "aset"];
+  const primaryNav = primaryIds.map(id=> NAV.find(n=> n.id === id)).filter(Boolean);
 
-  const railGroupsHTML = NAV_GROUPS.map(g=>
-    '<div class="rail-group">'+
-      '<div class="rail-group-label">'+esc(g.label)+"</div>"+
-      g.items.map(n=>
-        '<a class="rail-link'+(n.id === page? " active" : "")+'" href="'+n.href+'" title="'+esc(n.label)+'" aria-label="'+esc(n.label)+'"'+(n.id === page? ' aria-current="page"' : "")+">"+
-          icon(n.icon)+'<span class="rail-label">'+esc(n.label)+"</span>"+
-          (n.id === "pesanan"? '<span class="rail-count-pill hidden" id="navOrderBadge">0</span>' : "")+
-        "</a>"
-      ).join("")+
-    "</div>"
+  const mastLinksHTML = primaryNav.map(n=>
+    '<a class="mast-link'+(n.id === page? " active" : "")+'" href="'+n.href+'"'+(n.id === page? ' aria-current="page"' : "")+">"+
+      '<span>'+esc(n.id === "freelance"? "Freelance" : (n.id === "aset"? "Aset" : n.label))+"</span>"+
+      (n.id === "pesanan"? '<span class="rail-count-pill hidden" id="navOrderBadge">0</span>' : "")+
+    "</a>"
   ).join("");
 
-  const railHTML =
-    '<aside class="rail glass glass-text" aria-label="Menu utama">'+
-      '<div class="rail-head">'+
-        '<a class="rail-brand" href="index.html" aria-label="'+esc(String(p.businessName).toUpperCase())+'">'+
-          '<img class="brand-logo" width="32" height="32" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'">'+
-          '<span class="brand-name">'+esc(String(p.businessName).toUpperCase())+"</span>"+
-        "</a>"+
-        '<button type="button" class="rail-collapse-btn" id="railCollapseBtn" aria-expanded="'+(!collapsed)+'" aria-label="'+(collapsed? "Lebarkan sidebar" : "Ciutkan sidebar")+'" title="'+(collapsed? "Lebarkan sidebar" : "Ciutkan sidebar")+'">'+
-          icon(collapsed? "panel-left-open" : "panel-left-close", "icon-sm")+
-        "</button>"+
-      "</div>"+
-      '<div class="rail-search-wrap">'+
-        '<button type="button" class="rail-search" data-global-search aria-label="Buka pencarian global (Ctrl+K)">'+
-          icon("search")+'<span>Cari data...</span><kbd>Ctrl K</kbd>'+
-        "</button>"+
-      "</div>"+
-      '<nav class="rail-nav" aria-label="Navigasi halaman">'+railGroupsHTML+"</nav>"+
-      '<div class="rail-foot">'+
-        '<div class="dock-item profile-wrap">'+
-          '<button type="button" class="icon-btn" id="profileBtn" aria-label="Menu profil" aria-expanded="false">'+icon("circle-user-round")+"</button>"+
-          '<div class="pop glass glass-text hidden" id="profilePop">'+
-            '<a class="pop-item" href="settings.html">'+icon("settings","icon-sm")+" Pengaturan</a>"+
-            '<button type="button" class="pop-item danger" id="logoutBtn">'+icon("log-out","icon-sm")+" Keluar</button>"+
-          "</div>"+
-        "</div>"+
-        '<span class="small muted rail-label" style="font-weight:700">FNATIX ID</span>'+
-      "</div>"+
-    "</aside>";
+  const brandUpper = String(p.businessName || "FNATIX ID").toUpperCase();
+  const brandHTML = brandUpper.endsWith(" ID")
+    ? esc(brandUpper.slice(0, -3))+' <span class="brand-id">ID</span>'
+    : esc(brandUpper);
 
   const topbarHTML =
-    '<header class="topbar glass glass-text" data-refract="0.8" data-refract-blur="12">'+
-      '<a class="top-brand" href="index.html">'+
-        '<img class="brand-logo" width="32" height="32" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'">'+
-        '<span class="brand-stack"><span class="brand-name">'+esc(String(p.businessName).toUpperCase())+'</span><span class="top-date-inline">'+esc(dateText)+"</span></span>"+
-      "</a>"+
-      '<div class="top-context"><span class="top-date-chip">'+icon("calendar","icon-sm")+'<span>'+esc(dateText)+"</span></span></div>"+
-      '<div class="top-right">'+
-        '<button type="button" class="icon-btn mobile-search-btn" data-global-search aria-label="Cari data">'+icon("search")+"</button>"+
-        '<div class="dock-item">'+
-          '<button type="button" class="icon-btn" id="notifBtn" aria-label="Notifikasi" aria-expanded="false">'+icon("bell")+'<span class="badge hidden" id="notifBadge">0</span></button>'+
-          '<div class="pop glass glass-text notif-pop hidden" id="notifPop"></div>'+
+    '<header class="topbar masthead" data-refract="0.8" data-refract-blur="12">'+
+      '<div class="mast-inner">'+
+        '<a class="mast-brand" href="index.html" aria-label="'+esc(brandUpper)+'">'+
+          '<img class="brand-logo" width="34" height="34" src="'+esc(p.logo || "logo-glyph.png")+'" alt="Logo '+esc(p.businessName)+'">'+
+          '<span class="brand-stack"><span class="brand-name">'+brandHTML+'</span><span class="top-date-inline">'+esc(dateText)+"</span></span>"+
+        "</a>"+
+        '<nav class="mast-nav glass glass-text" aria-label="Navigasi utama">'+mastLinksHTML+"</nav>"+
+        '<div class="top-right">'+
+          '<button type="button" class="mast-search" data-global-search aria-label="Cari data (Ctrl+K)">'+
+            icon("search","icon-sm")+'<span class="mast-search-lbl">Cari...</span><kbd>Ctrl K</kbd>'+
+          "</button>"+
+          '<button type="button" class="icon-btn mobile-search-btn" data-global-search aria-label="Cari data">'+icon("search")+"</button>"+
+          '<div class="dock-item">'+
+            '<button type="button" class="icon-btn" id="notifBtn" aria-label="Notifikasi" aria-expanded="false">'+icon("bell")+'<span class="badge hidden" id="notifBadge">0</span></button>'+
+            '<div class="pop glass glass-text notif-pop hidden" id="notifPop"></div>'+
+          "</div>"+
+          '<button type="button" class="icon-btn" data-theme-toggle aria-label="Ganti tema"></button>'+
+          '<div class="dock-item profile-wrap desktop-only-pop">'+
+            '<button type="button" class="icon-btn" id="profileBtn" aria-label="Menu studio dan akun" aria-expanded="false">'+icon("sliders-horizontal")+"</button>"+
+            '<div class="pop glass glass-text hidden" id="profilePop">'+
+              '<div class="pop-meta">'+esc(dateText)+"</div>"+
+              '<a class="pop-item" href="settings.html">'+icon("settings","icon-sm")+" Pengaturan</a>"+
+              '<a class="pop-item" href="sistem-fnatix.html">'+icon("waypoints","icon-sm")+" Sistem</a>"+
+              '<button type="button" class="pop-item danger" id="logoutBtn">'+icon("log-out","icon-sm")+" Keluar</button>"+
+            "</div>"+
+          "</div>"+
         "</div>"+
-        '<button type="button" class="icon-btn" data-theme-toggle aria-label="Ganti tema"></button>'+
       "</div>"+
     "</header>";
 
@@ -778,7 +762,6 @@ function buildShell(){
 
     const wrap = document.createElement("div");
     wrap.className = "app";
-    wrap.innerHTML = railHTML;
 
     const workspace = document.createElement("div");
     workspace.className = "workspace";
@@ -885,6 +868,12 @@ function buildShell(){
   });
   refreshIcons();
   updateNavOrderBadge();
+  const mast = $(".topbar.masthead");
+  if(mast){
+    const syncMastScroll = ()=> mast.classList.toggle("is-scrolled", window.scrollY > 10);
+    syncMastScroll();
+    window.addEventListener("scroll", syncMastScroll, { passive:true });
+  }
   if(window.LiquidGlassRefraction) window.LiquidGlassRefraction.refresh();
 }
 function updateNavOrderBadge(){
